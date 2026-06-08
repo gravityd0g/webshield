@@ -1,5 +1,3 @@
-// Donut chart con segmentos clickeables. Click = filtra por tipo de ataque.
-
 const SIZE = 220
 const RADIUS = 86
 const STROKE = 28
@@ -30,16 +28,21 @@ export default function AttackDonut({ data }) {
   const top = data[0]
 
   return (
-    <section className="panel panel--chart" aria-labelledby="attacks-title">
-      <header className="panel__header">
+    <section
+      className="bg-gradient-to-b from-bg-2 to-bg-1 border border-border rounded-[14px] px-[18px] pt-[18px] pb-4 shadow-panel flex flex-col gap-3.5 min-w-0 min-h-80"
+      aria-labelledby="attacks-title"
+    >
+      <header className="flex items-start justify-between gap-4">
         <div>
-          <h2 id="attacks-title" className="panel__title">Distribución de ataques</h2>
-          <p className="panel__sub">% de bloqueos por categoría · 24h</p>
+          <h2 id="attacks-title" className="m-0 text-sm font-semibold tracking-wide text-fg flex items-center gap-2.5">
+            Distribución de ataques
+          </h2>
+          <p className="mt-0.5 mb-0 text-[11px] text-fg-dim">% de bloqueos por categoría · 24h</p>
         </div>
       </header>
-      <div className="donut">
-        <svg viewBox={`0 0 ${SIZE} ${SIZE}`} role="img" aria-label="Donut de tipos de ataque">
-          <circle cx={CX} cy={CY} r={RADIUS} fill="none" stroke="var(--border)" strokeWidth={STROKE} />
+      <div className="flex flex-col items-center gap-4">
+        <svg viewBox={`0 0 ${SIZE} ${SIZE}`} className="w-[180px] h-[180px] shrink-0" role="img" aria-label="Donut de tipos de ataque">
+          <circle cx={CX} cy={CY} r={RADIUS} fill="none" stroke="var(--color-border)" strokeWidth={STROKE} />
           {segments.map((s) => (
             <path
               key={s.id}
@@ -52,15 +55,22 @@ export default function AttackDonut({ data }) {
               <title>{`${s.label}: ${s.value}%`}</title>
             </path>
           ))}
-          <text x={CX} y={CY - 4} textAnchor="middle" className="donut__big">{top.value}%</text>
-          <text x={CX} y={CY + 18} textAnchor="middle" className="donut__sub">{top.label}</text>
+          <text x={CX} y={CY - 4} textAnchor="middle" className="font-mono text-[26px] font-bold fill-fg">
+            {top.value}%
+          </text>
+          <text x={CX} y={CY + 18} textAnchor="middle" className="text-[11px] fill-fg-muted uppercase tracking-wider">
+            {top.label}
+          </text>
         </svg>
-        <ul className="donut__legend">
+        <ul className="list-none m-0 p-0 w-full grid grid-cols-2 gap-x-3 gap-y-0.5 min-[1400px]:grid-cols-1">
           {data.map((d) => (
-            <li key={d.id}>
-              <span className="donut__swatch" style={{ background: d.color }}></span>
-              <span className="donut__label">{d.label}</span>
-              <span className="donut__value">{d.value}%</span>
+            <li
+              key={d.id}
+              className="grid grid-cols-[10px_1fr_auto] items-center gap-2 text-[11.5px] px-1.5 py-1 rounded min-w-0 hover:bg-surface-hover"
+            >
+              <span className="w-2.5 h-2.5 rounded-sm" style={{ background: d.color }} />
+              <span className="text-fg truncate">{d.label}</span>
+              <span className="text-fg-muted font-mono font-semibold text-[11px]">{d.value}%</span>
             </li>
           ))}
         </ul>

@@ -1,16 +1,5 @@
 import { useState } from 'react'
 
-const VERDICT_BADGE = {
-  valid: { label: 'Valid', cls: 'badge badge--ok' },
-  anomalous: { label: 'Anomalous', cls: 'badge badge--danger' },
-}
-
-const ACTION_ICON = {
-  blocked: { label: 'BLOCKED', cls: 'tag tag--danger' },
-  allowed: { label: 'ALLOWED', cls: 'tag tag--ok' },
-  flagged: { label: 'FLAGGED', cls: 'tag tag--warn' },
-}
-
 const ATTACK_LABEL = {
   sqli: 'SQL Injection',
   xss: 'Cross-Site Scripting',
@@ -22,11 +11,21 @@ const ATTACK_LABEL = {
 
 function ScoreCell({ score }) {
   const pct = Math.round(score * 100)
-  const tone = score >= 0.7 ? 'danger' : score >= 0.4 ? 'warn' : 'ok'
   return (
-    <div className={`score score--${tone}`}>
-      <div className="score__bar"><div className="score__fill" style={{ width: `${pct}%` }}></div></div>
-      <span className="mono">{score.toFixed(2)}</span>
+    <div className="flex items-center gap-2 min-w-[120px]">
+      <div className="flex-1 h-[5px] bg-bg-3 rounded-sm overflow-hidden">
+        <div
+          className={
+            score >= 0.7
+              ? 'h-full rounded-sm bg-rose'
+              : score >= 0.4
+                ? 'h-full rounded-sm bg-amber'
+                : 'h-full rounded-sm bg-cyan'
+          }
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+      <span className="font-mono text-xs">{score.toFixed(2)}</span>
     </div>
   )
 }
@@ -47,17 +46,29 @@ export default function LiveEvents({ events, onSelectEvent }) {
   })
 
   return (
-    <section className="panel panel--wide" aria-labelledby="live-events-title">
-      <header className="panel__header">
+    <section
+      className="bg-gradient-to-b from-bg-2 to-bg-1 border border-border rounded-[14px] px-[18px] pt-[18px] pb-4 shadow-panel flex flex-col gap-3.5 min-w-0 col-span-12"
+      aria-labelledby="live-events-title"
+    >
+      <header className="flex items-start justify-between gap-4">
         <div>
-          <h2 id="live-events-title" className="panel__title">
+          <h2 id="live-events-title" className="m-0 text-sm font-semibold tracking-wide text-fg flex items-center gap-2.5">
             Live events
-            <span className={`live-dot ${paused ? 'is-paused' : ''}`} aria-label={paused ? 'pausado' : 'en vivo'}></span>
+            <span
+              className={
+                paused
+                  ? 'w-2 h-2 rounded-full bg-amber shadow-[0_0_0_3px_var(--color-amber-soft)] motion-reduce:animate-none'
+                  : 'w-2 h-2 rounded-full bg-rose animate-pulse-rose motion-reduce:animate-none'
+              }
+              aria-label={paused ? 'pausado' : 'en vivo'}
+            />
           </h2>
-          <p className="panel__sub">Stream de requests clasificados por el WAF — click para inspeccionar</p>
+          <p className="mt-0.5 mb-0 text-[11px] text-fg-dim">
+            Stream de requests clasificados por el WAF — click para inspeccionar
+          </p>
         </div>
-        <div className="panel__controls">
-          <div className="seg" role="group" aria-label="Filtros del stream">
+        <div className="flex gap-2 items-center">
+          <div className="flex bg-bg-3 border border-border rounded-[7px] p-0.5" role="group" aria-label="Filtros del stream">
             {[
               { id: 'all', label: 'Todos' },
               { id: 'anomalous', label: 'Anómalos' },
@@ -66,7 +77,11 @@ export default function LiveEvents({ events, onSelectEvent }) {
               <button
                 key={f.id}
                 type="button"
-                className={`seg__btn ${filter === f.id ? 'is-active' : ''}`}
+                className={
+                  filter === f.id
+                    ? 'border-0 px-2.5 py-1 text-[11px] font-medium rounded-[5px] cursor-pointer bg-bg-1 text-fg'
+                    : 'border-0 px-2.5 py-1 text-[11px] font-medium rounded-[5px] cursor-pointer bg-transparent text-fg-muted'
+                }
                 onClick={() => setFilter(f.id)}
               >
                 {f.label}
@@ -75,7 +90,11 @@ export default function LiveEvents({ events, onSelectEvent }) {
           </div>
           <button
             type="button"
-            className={`panel__action ${paused ? 'is-paused' : ''}`}
+            className={
+              paused
+                ? 'bg-amber-soft text-amber border border-amber rounded-md px-2.5 py-[5px] text-[11px] cursor-pointer hover:text-amber'
+                : 'bg-bg-3 text-fg-muted border border-border rounded-md px-2.5 py-[5px] text-[11px] cursor-pointer hover:text-fg'
+            }
             onClick={() => setPaused((p) => !p)}
           >
             {paused ? '▶ Reanudar' : '⏸ Pausar'}
@@ -83,26 +102,48 @@ export default function LiveEvents({ events, onSelectEvent }) {
         </div>
       </header>
 
-      <div className="events">
-        <table className="events__table">
+      <div className="relative overflow-x-auto">
+        <table className="w-full border-collapse text-xs">
           <thead>
             <tr>
-              <th scope="col">Tiempo</th>
-              <th scope="col">IP</th>
-              <th scope="col">Método</th>
-              <th scope="col">URI</th>
-              <th scope="col">Verdict</th>
-              <th scope="col">Score</th>
-              <th scope="col">Acción</th>
-              <th scope="col">Tipo</th>
-              <th scope="col" className="events__rule">Regla</th>
+              <th scope="col" className="text-left px-2.5 py-[9px] font-semibold text-[10px] uppercase tracking-wider text-fg-dim border-b border-border bg-bg-2 sticky top-0 z-[1]">
+                Tiempo
+              </th>
+              <th scope="col" className="text-left px-2.5 py-[9px] font-semibold text-[10px] uppercase tracking-wider text-fg-dim border-b border-border bg-bg-2 sticky top-0 z-[1]">
+                IP
+              </th>
+              <th scope="col" className="text-left px-2.5 py-[9px] font-semibold text-[10px] uppercase tracking-wider text-fg-dim border-b border-border bg-bg-2 sticky top-0 z-[1]">
+                Método
+              </th>
+              <th scope="col" className="text-left px-2.5 py-[9px] font-semibold text-[10px] uppercase tracking-wider text-fg-dim border-b border-border bg-bg-2 sticky top-0 z-[1]">
+                URI
+              </th>
+              <th scope="col" className="text-left px-2.5 py-[9px] font-semibold text-[10px] uppercase tracking-wider text-fg-dim border-b border-border bg-bg-2 sticky top-0 z-[1]">
+                Verdict
+              </th>
+              <th scope="col" className="text-left px-2.5 py-[9px] font-semibold text-[10px] uppercase tracking-wider text-fg-dim border-b border-border bg-bg-2 sticky top-0 z-[1]">
+                Score
+              </th>
+              <th scope="col" className="text-left px-2.5 py-[9px] font-semibold text-[10px] uppercase tracking-wider text-fg-dim border-b border-border bg-bg-2 sticky top-0 z-[1]">
+                Acción
+              </th>
+              <th scope="col" className="text-left px-2.5 py-[9px] font-semibold text-[10px] uppercase tracking-wider text-fg-dim border-b border-border bg-bg-2 sticky top-0 z-[1]">
+                Tipo
+              </th>
+              <th scope="col" className="text-left px-2.5 py-[9px] font-semibold text-[10px] uppercase tracking-wider text-fg-dim border-b border-border bg-bg-2 sticky top-0 z-[1] text-[11px]">
+                Regla
+              </th>
             </tr>
           </thead>
           <tbody>
             {filtered.map((evt) => (
               <tr
                 key={evt.id}
-                className={`events__row events__row--${evt.verdict}`}
+                className={
+                  evt.verdict === 'anomalous'
+                    ? 'cursor-pointer transition-colors duration-80 outline-0 focus:[&>td]:bg-surface-hover focus:[&>td]:shadow-[inset_2px_0_0_var(--color-blue)] hover:[&>td]:bg-surface-hover [&>td:first-child]:shadow-[inset_3px_0_0_var(--color-rose)]'
+                    : 'cursor-pointer transition-colors duration-80 outline-0 focus:[&>td]:bg-surface-hover focus:[&>td]:shadow-[inset_2px_0_0_var(--color-blue)] hover:[&>td]:bg-surface-hover [&>td:first-child]:shadow-[inset_3px_0_0_var(--color-cyan)]'
+                }
                 onClick={() => onSelectEvent(evt)}
                 tabIndex={0}
                 onKeyDown={(e) => {
@@ -112,20 +153,72 @@ export default function LiveEvents({ events, onSelectEvent }) {
                   }
                 }}
               >
-                <td className="mono mono--dim">{evt.ts}</td>
-                <td className="mono">{evt.ip}</td>
-                <td><span className={`method method--${evt.method.toLowerCase()}`}>{evt.method}</span></td>
-                <td><code className="events__uri">{truncate(evt.uri)}</code></td>
-                <td><span className={VERDICT_BADGE[evt.verdict].cls}>{VERDICT_BADGE[evt.verdict].label}</span></td>
-                <td><ScoreCell score={evt.score} /></td>
-                <td><span className={ACTION_ICON[evt.action].cls}>{ACTION_ICON[evt.action].label}</span></td>
-                <td>{evt.attackType ? ATTACK_LABEL[evt.attackType] : <span className="mono--dim">—</span>}</td>
-                <td className="mono mono--dim events__rule">{evt.rule ?? '—'}</td>
+                <td className="font-mono text-xs text-fg-dim px-2.5 py-[9px] border-b border-border align-middle">
+                  {evt.ts}
+                </td>
+                <td className="font-mono text-xs px-2.5 py-[9px] border-b border-border align-middle">{evt.ip}</td>
+                <td className="px-2.5 py-[9px] border-b border-border align-middle">
+                  <span
+                    className={
+                      evt.method.toLowerCase() === 'get'
+                        ? 'inline-block font-mono text-[10px] font-bold px-1.5 py-0.5 rounded-sm tracking-wide bg-blue-soft text-blue'
+                        : evt.method.toLowerCase() === 'post'
+                          ? 'inline-block font-mono text-[10px] font-bold px-1.5 py-0.5 rounded-sm tracking-wide bg-violet-soft text-violet'
+                          : evt.method.toLowerCase() === 'put'
+                            ? 'inline-block font-mono text-[10px] font-bold px-1.5 py-0.5 rounded-sm tracking-wide bg-amber-soft text-amber'
+                            : 'inline-block font-mono text-[10px] font-bold px-1.5 py-0.5 rounded-sm tracking-wide bg-rose-soft text-rose'
+                    }
+                  >
+                    {evt.method}
+                  </span>
+                </td>
+                <td className="px-2.5 py-[9px] border-b border-border align-middle">
+                  <code className="font-mono text-[11px] bg-bg-3 text-fg px-1.5 py-0.5 rounded inline-block max-w-[360px] truncate align-middle">
+                    {truncate(evt.uri)}
+                  </code>
+                </td>
+                <td className="px-2.5 py-[9px] border-b border-border align-middle">
+                  <span
+                    className={
+                      evt.verdict === 'valid'
+                        ? 'inline-block text-[10px] font-bold px-[7px] py-[3px] rounded font-mono tracking-wide bg-cyan-soft text-cyan'
+                        : 'inline-block text-[10px] font-bold px-[7px] py-[3px] rounded font-mono tracking-wide bg-rose-soft text-rose'
+                    }
+                  >
+                    {evt.verdict === 'valid' ? 'Valid' : 'Anomalous'}
+                  </span>
+                </td>
+                <td className="px-2.5 py-[9px] border-b border-border align-middle">
+                  <ScoreCell score={evt.score} />
+                </td>
+                <td className="px-2.5 py-[9px] border-b border-border align-middle">
+                  <span
+                    className={
+                      evt.action === 'blocked'
+                        ? 'inline-block text-[10px] font-semibold px-1.5 py-0.5 rounded-sm tracking-wide font-mono border border-current text-rose'
+                        : evt.action === 'allowed'
+                          ? 'inline-block text-[10px] font-semibold px-1.5 py-0.5 rounded-sm tracking-wide font-mono border border-current text-cyan'
+                          : 'inline-block text-[10px] font-semibold px-1.5 py-0.5 rounded-sm tracking-wide font-mono border border-current text-amber'
+                    }
+                  >
+                    {evt.action === 'blocked' ? 'BLOCKED' : evt.action === 'allowed' ? 'ALLOWED' : 'FLAGGED'}
+                  </span>
+                </td>
+                <td className="px-2.5 py-[9px] border-b border-border align-middle">
+                  {evt.attackType ? ATTACK_LABEL[evt.attackType] : <span className="font-mono text-xs text-fg-dim">—</span>}
+                </td>
+                <td className="font-mono text-xs text-fg-dim px-2.5 py-[9px] border-b border-border align-middle text-[11px]">
+                  {evt.rule ?? '—'}
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
-        {paused && <div className="events__paused-overlay">Stream pausado · nuevos eventos en cola</div>}
+        {paused && (
+          <div className="absolute top-10 left-1/2 -translate-x-1/2 px-3.5 py-1.5 bg-amber-soft text-amber border border-amber rounded-full text-[11px] font-semibold tracking-wide uppercase pointer-events-none">
+            Stream pausado · nuevos eventos en cola
+          </div>
+        )}
       </div>
     </section>
   )

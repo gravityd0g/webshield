@@ -1,1 +1,58 @@
 @import "tailwindcss";
+
+@theme {
+  --color-bg-0: #070b14;
+  --color-bg-1: #0a0f1d;
+  --color-bg-2: #0f1626;
+  --color-bg-3: #131b30;
+  --color-surface: #111a2e;
+  --color-surface-hover: #16213a;
+  --color-border: #1c2438;
+  --color-border-strong: #243049;
+  --color-fg: #e8eaf2;
+  --color-fg-muted: #8b94ad;
+  --color-fg-dim: #5c6480;
+  --color-cyan: #5eead4;
+  --color-cyan-soft: rgb(94 234 212 / 0.12);
+  --color-rose: #f43f5e;
+  --color-rose-soft: rgb(244 63 94 / 0.14);
+  --color-amber: #fbbf24;
+  --color-amber-soft: rgb(251 191 36 / 0.14);
+  --color-blue: #60a5fa;
+  --color-blue-soft: rgb(96 165 250 / 0.14);
+  --color-violet: #a78bfa;
+  --color-violet-soft: rgb(167 139 250 / 0.14);
+  --color-green: #4ade80;
+  --font-mono: ui-monospace, "JetBrains Mono", "SF Mono", Consolas, monospace;
+  --shadow-panel: 0 1px 0 rgb(255 255 255 / 0.03) inset, 0 8px 24px rgb(0 0 0 / 0.35);
+  --animate-pulse-status: pulse-status 2s ease-in-out infinite;
+  --animate-pulse-rose: pulse-rose 1.2s ease-in-out infinite;
+  --animate-fade-in: fade-in 120ms ease-out;
+  --animate-slide-in: slide-in 180ms cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+@keyframes pulse-status {
+  0%, 100% { box-shadow: 0 0 0 3px rgb(74 222 128 / 0.18); }
+  50% { box-shadow: 0 0 0 5px rgb(74 222 128 / 0.05); }
+}
+
+@keyframes pulse-rose {
+  0%, 100% { box-shadow: 0 0 0 3px rgb(244 63 94 / 0.25); }
+  50% { box-shadow: 0 0 0 6px rgb(244 63 94 / 0.05); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-in {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+}

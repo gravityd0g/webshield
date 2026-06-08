@@ -8,7 +8,6 @@ const TIME_RANGES = [
 ]
 
 function Icon({ name }) {
-  // Iconos inline SVG, sin librería externa. Stroke siempre desde currentColor.
   const paths = {
     shield: <path d="M12 3l8 3v6c0 5-3.5 8.5-8 9-4.5-.5-8-4-8-9V6l8-3z" />,
     grid: <><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" /></>,
@@ -32,55 +31,88 @@ function Icon({ name }) {
 
 function TopBar({ timeRange, onTimeRangeChange }) {
   return (
-    <header className="topbar" role="banner">
-      <div className="topbar__brand">
-        <div className="topbar__logo" aria-hidden="true">
+    <header
+      className="grid grid-cols-[280px_1fr_auto] items-center gap-6 px-5 py-2.5 bg-gradient-to-b from-bg-2 to-bg-1 border-b border-border sticky top-0 z-30"
+      role="banner"
+    >
+      <div className="flex items-center gap-3">
+        <div
+          className="w-9 h-9 grid place-items-center bg-gradient-to-br from-slate-800 to-[#0b1220] border border-border-strong rounded-[9px] text-cyan shadow-[0_0_0_1px_rgb(94_234_212/0.06),inset_0_1px_0_rgb(255_255_255/0.04)]"
+          aria-hidden="true"
+        >
           <Icon name="shield" />
         </div>
-        <div className="topbar__brand-text">
-          <strong>WebShield</strong>
-          <span className="topbar__brand-sub">Security Operations Center</span>
+        <div className="flex flex-col leading-tight">
+          <strong className="text-[15px] tracking-wide">WebShield</strong>
+          <span className="text-[11px] text-fg-dim uppercase tracking-wider">Security Operations Center</span>
         </div>
       </div>
 
-      <div className="topbar__center">
-        <div className="topbar__search" role="search">
+      <div className="flex justify-center">
+        <div
+          className="w-full max-w-[560px] flex items-center gap-2.5 px-3 py-2 bg-bg-2 border border-border rounded-[10px] text-fg-muted transition-[border-color,background] duration-120 focus-within:border-blue focus-within:bg-bg-3"
+          role="search"
+        >
           <Icon name="search" />
           <input
             type="search"
             placeholder="Buscar IP, URI, evento, regla CRS…"
             aria-label="Búsqueda global"
+            className="flex-1 bg-transparent border-0 text-fg text-[13px] outline-0 placeholder:text-fg-dim"
           />
-          <kbd>⌘K</kbd>
+          <kbd className="font-mono text-[11px] px-1.5 py-0.5 border border-border-strong rounded bg-bg-3 text-fg-muted">
+            ⌘K
+          </kbd>
         </div>
       </div>
 
-      <div className="topbar__actions">
-        <div className="topbar__status" title="WAF en línea">
-          <span className="topbar__status-dot" aria-hidden="true"></span>
+      <div className="flex items-center gap-3">
+        <div
+          className="flex items-center gap-2 px-2.5 py-1.5 bg-bg-2 border border-border rounded-full text-xs text-fg-muted"
+          title="WAF en línea"
+        >
+          <span
+            className="w-2 h-2 rounded-full bg-green animate-pulse-status motion-reduce:animate-none"
+            aria-hidden="true"
+          />
           <span>WAF online</span>
         </div>
-        <div className="topbar__time-range" role="group" aria-label="Rango de tiempo">
+        <div className="flex bg-bg-2 border border-border rounded-[10px] p-0.5" role="group" aria-label="Rango de tiempo">
           {TIME_RANGES.map((r) => (
             <button
               key={r.id}
               type="button"
-              className={`topbar__time-btn ${timeRange === r.id ? 'is-active' : ''}`}
+              className={
+                timeRange === r.id
+                  ? 'border-0 px-3 py-1.5 text-xs font-medium rounded-md cursor-pointer bg-bg-3 text-fg shadow-[0_0_0_1px_var(--color-border-strong)]'
+                  : 'border-0 px-3 py-1.5 text-xs font-medium rounded-md cursor-pointer bg-transparent text-fg-muted'
+              }
               onClick={() => onTimeRangeChange(r.id)}
             >
               {r.label}
             </button>
           ))}
         </div>
-        <button type="button" className="topbar__icon-btn" aria-label="Notificaciones (3 nuevas)">
+        <button
+          type="button"
+          className="relative w-[34px] h-[34px] grid place-items-center bg-bg-2 border border-border rounded-[10px] text-fg-muted cursor-pointer hover:text-fg hover:border-border-strong"
+          aria-label="Notificaciones (3 nuevas)"
+        >
           <Icon name="bell" />
-          <span className="topbar__badge">3</span>
+          <span className="absolute -top-1 -right-1 bg-rose text-white text-[10px] font-semibold px-[5px] py-px rounded-full border-2 border-bg-1">
+            3
+          </span>
         </button>
-        <div className="topbar__user" title={`${currentUser.name} · ${currentUser.role}`}>
-          <div className="topbar__avatar">{currentUser.initials}</div>
-          <div className="topbar__user-text">
-            <strong>{currentUser.name}</strong>
-            <span>{currentUser.role}</span>
+        <div
+          className="flex items-center gap-2.5 pl-1 pr-2.5 py-1 bg-bg-2 border border-border rounded-full"
+          title={`${currentUser.name} · ${currentUser.role}`}
+        >
+          <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue to-violet grid place-items-center text-[11px] font-bold text-white">
+            {currentUser.initials}
+          </div>
+          <div className="flex flex-col leading-tight">
+            <strong className="text-xs">{currentUser.name}</strong>
+            <span className="text-[10px] text-fg-dim uppercase tracking-wide">{currentUser.role}</span>
           </div>
         </div>
       </div>
@@ -90,43 +122,62 @@ function TopBar({ timeRange, onTimeRangeChange }) {
 
 function Sidebar() {
   return (
-    <nav className="sidebar" aria-label="Navegación principal">
-      <ul>
+    <nav
+      className="w-60 shrink-0 bg-bg-1 border-r border-border flex flex-col px-3 py-4"
+      aria-label="Navegación principal"
+    >
+      <ul className="list-none m-0 p-0 flex-1 flex flex-col gap-0.5">
         {navItems.map((item) => (
           <li key={item.id}>
             <a
               href={`#${item.id}`}
-              className={`sidebar__item ${item.active ? 'is-active' : ''}`}
+              className={
+                item.active
+                  ? 'flex items-center gap-[11px] px-3 py-2 rounded-lg text-[13px] font-medium no-underline relative bg-gradient-to-r from-blue-soft to-transparent text-fg shadow-[inset_2px_0_0_var(--color-blue)]'
+                  : 'flex items-center gap-[11px] px-3 py-2 rounded-lg text-[13px] font-medium no-underline relative text-fg-muted hover:bg-surface-hover hover:text-fg'
+              }
               aria-current={item.active ? 'page' : undefined}
             >
-              <span className="sidebar__icon"><Icon name={item.icon} /></span>
-              <span className="sidebar__label">{item.label}</span>
+              <span className="grid place-items-center w-[18px]">
+                <Icon name={item.icon} />
+              </span>
+              <span className="flex-1">{item.label}</span>
               {item.badge != null && (
-                <span className={`sidebar__badge ${typeof item.badge === 'string' ? 'sidebar__badge--live' : ''}`}>
+                <span
+                  className={
+                    typeof item.badge === 'string'
+                      ? 'text-[10px] px-1.5 py-0.5 rounded-full font-semibold font-mono bg-rose-soft text-rose tracking-wider'
+                      : 'text-[10px] px-1.5 py-0.5 rounded-full font-semibold font-mono bg-bg-3 text-fg-muted'
+                  }
+                >
                   {item.badge}
                 </span>
               )}
-              {item.adminOnly && <span className="sidebar__lock" title="Solo admin">🔒</span>}
+              {item.adminOnly && (
+                <span className="text-[10px] opacity-50" title="Solo admin">
+                  🔒
+                </span>
+              )}
             </a>
           </li>
         ))}
       </ul>
-      <div className="sidebar__footer">
-        <div className="sidebar__health">
-          <div className="sidebar__health-row">
+      <div className="border-t border-border mt-3 pt-3 flex flex-col gap-2.5">
+        <div className="flex flex-col gap-1 text-[11px] text-fg-dim">
+          <div className="flex justify-between px-1.5 py-1 rounded bg-bg-2">
             <span>Modelo</span>
-            <strong className="sidebar__health-ok">healthy</strong>
+            <strong className="text-green">healthy</strong>
           </div>
-          <div className="sidebar__health-row">
+          <div className="flex justify-between px-1.5 py-1 rounded bg-bg-2">
             <span>DB</span>
-            <strong className="sidebar__health-ok">healthy</strong>
+            <strong className="text-green">healthy</strong>
           </div>
-          <div className="sidebar__health-row">
+          <div className="flex justify-between px-1.5 py-1 rounded bg-bg-2">
             <span>Backend</span>
-            <strong className="sidebar__health-ok">healthy</strong>
+            <strong className="text-green">healthy</strong>
           </div>
         </div>
-        <p className="sidebar__version">webshield v0.1.0 · build #boceto</p>
+        <p className="m-0 text-[10px] text-fg-dim font-mono text-center">webshield v0.1.0 · build #boceto</p>
       </div>
     </nav>
   )
@@ -134,11 +185,13 @@ function Sidebar() {
 
 export default function AppShell({ children, timeRange, onTimeRangeChange }) {
   return (
-    <div className="app-shell">
+    <div
+      className="min-h-screen flex flex-col text-sm leading-[1.45] text-fg font-sans bg-bg-0 bg-[radial-gradient(1200px_600px_at_20%_-10%,rgb(96_165_250/0.06),transparent_60%),radial-gradient(900px_500px_at_110%_10%,rgb(167_139_250/0.05),transparent_60%),var(--color-bg-0)] [&_*]:box-border [&_*::before]:box-border [&_*::after]:box-border [&_*:focus-visible]:outline-2 [&_*:focus-visible]:outline-blue [&_*:focus-visible]:outline-offset-2 [&_*:focus-visible]:rounded"
+    >
       <TopBar timeRange={timeRange} onTimeRangeChange={onTimeRangeChange} />
-      <div className="app-shell__body">
+      <div className="flex flex-1 min-h-0">
         <Sidebar />
-        <main className="app-shell__main" id="main">
+        <main className="flex-1 px-6 pt-5 pb-8 overflow-x-hidden flex flex-col gap-4" id="main">
           {children}
         </main>
       </div>
