@@ -34,59 +34,15 @@ CREATE TABLE IF NOT EXISTS request_events (
     event_id            CHAR(36)     NOT NULL DEFAULT (UUID()),
     event_code          VARCHAR(32)  NULL,
     detected_at         TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
     verdict             VARCHAR(20)  NOT NULL,
     action              VARCHAR(20)  NOT NULL DEFAULT 'allowed',
     confidence_score    DECIMAL(6,5) NULL,
-
-    http_method         VARCHAR(10)  NOT NULL,
-    uri                 TEXT         NOT NULL,
-    host_header         VARCHAR(32)  NULL,
-    `host`              VARCHAR(255) NULL,
-    http_connection     VARCHAR(64)  NULL,
-    accept_header       TEXT         NULL,
-    accept_charset      TEXT         NULL,
-    accept_language     TEXT         NULL,
-    cache_control       VARCHAR(128) NULL,
-    cookie              TEXT         NULL,
-    pragma_header       VARCHAR(128) NULL,
-    user_agent          TEXT         NULL,
-    content_length      INT          NOT NULL DEFAULT 0,
-    content_type        VARCHAR(128) NULL,
-    post_data           TEXT         NULL,
-    get_query           TEXT         NULL,
-
-    request_headers     JSON         NULL,
+    primary_attack_type VARCHAR(32)  NULL,
     waf_rule            VARCHAR(32)  NULL,
     latency_ms          INT          NULL,
-
-    primary_attack_type VARCHAR(32)  NULL,
-
-    has_sql_kw          TINYINT      NOT NULL DEFAULT 0,
-    has_xss_kw          TINYINT      NOT NULL DEFAULT 0,
-    has_traversal       TINYINT      NOT NULL DEFAULT 0,
-    has_encoded         TINYINT      NOT NULL DEFAULT 0,
-    has_admin           TINYINT      NOT NULL DEFAULT 0,
-
-    cnt_equal           INT          NOT NULL DEFAULT 0,
-    cnt_ampersand       INT          NOT NULL DEFAULT 0,
-    cnt_percent         INT          NOT NULL DEFAULT 0,
-    cnt_slash           INT          NOT NULL DEFAULT 0,
-    cnt_dot             INT          NOT NULL DEFAULT 0,
-    cnt_quote           INT          NOT NULL DEFAULT 0,
-    cnt_semicolon       INT          NOT NULL DEFAULT 0,
-    cnt_comment         INT          NOT NULL DEFAULT 0,
-
-    len_uri             INT          NOT NULL DEFAULT 0,
-    len_get_query       INT          NOT NULL DEFAULT 0,
-    len_post_data       INT          NOT NULL DEFAULT 0,
-    len_cookie          INT          NOT NULL DEFAULT 0,
-    len_user_agent      INT          NOT NULL DEFAULT 0,
-
     client_ip           VARCHAR(45)  NULL,
     client_country      CHAR(2)      NULL,
     created_at          TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
     PRIMARY KEY (event_id),
     UNIQUE KEY uq_request_event_code (event_code),
     KEY idx_request_detected_at (detected_at),
@@ -99,6 +55,57 @@ CREATE TABLE IF NOT EXISTS request_events (
         FOREIGN KEY (primary_attack_type) REFERENCES attack_type_catalog (code),
     CONSTRAINT chk_request_verdict CHECK (verdict IN ('valid', 'anomalous')),
     CONSTRAINT chk_request_action CHECK (action IN ('allowed', 'blocked', 'flagged'))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS request_http (
+    event_id          CHAR(36)     NOT NULL,
+    http_method       VARCHAR(10)  NOT NULL,
+    uri               TEXT         NOT NULL,
+    host_header       VARCHAR(32)  NULL,
+    `host`            VARCHAR(255) NULL,
+    http_connection   VARCHAR(64)  NULL,
+    accept_header     TEXT         NULL,
+    accept_charset    TEXT         NULL,
+    accept_language   TEXT         NULL,
+    cache_control     VARCHAR(128) NULL,
+    cookie            TEXT         NULL,
+    pragma_header     VARCHAR(128) NULL,
+    user_agent        TEXT         NULL,
+    content_length    INT          NOT NULL DEFAULT 0,
+    content_type      VARCHAR(128) NULL,
+    post_data         TEXT         NULL,
+    get_query         TEXT         NULL,
+    request_headers   JSON         NULL,
+    PRIMARY KEY (event_id),
+    KEY idx_request_http_method (http_method),
+    KEY idx_request_http_uri (uri(255)),
+    CONSTRAINT fk_request_http_event
+        FOREIGN KEY (event_id) REFERENCES request_events (event_id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS request_ml_indicators (
+    event_id        CHAR(36)  NOT NULL,
+    has_sql_kw      TINYINT   NOT NULL DEFAULT 0,
+    has_xss_kw      TINYINT   NOT NULL DEFAULT 0,
+    has_traversal   TINYINT   NOT NULL DEFAULT 0,
+    has_encoded     TINYINT   NOT NULL DEFAULT 0,
+    has_admin       TINYINT   NOT NULL DEFAULT 0,
+    cnt_equal       INT       NOT NULL DEFAULT 0,
+    cnt_ampersand   INT       NOT NULL DEFAULT 0,
+    cnt_percent     INT       NOT NULL DEFAULT 0,
+    cnt_slash       INT       NOT NULL DEFAULT 0,
+    cnt_dot         INT       NOT NULL DEFAULT 0,
+    cnt_quote       INT       NOT NULL DEFAULT 0,
+    cnt_semicolon   INT       NOT NULL DEFAULT 0,
+    cnt_comment     INT       NOT NULL DEFAULT 0,
+    len_uri         INT       NOT NULL DEFAULT 0,
+    len_get_query   INT       NOT NULL DEFAULT 0,
+    len_post_data   INT       NOT NULL DEFAULT 0,
+    len_cookie      INT       NOT NULL DEFAULT 0,
+    len_user_agent  INT       NOT NULL DEFAULT 0,
+    PRIMARY KEY (event_id),
+    CONSTRAINT fk_request_ml_event
+        FOREIGN KEY (event_id) REFERENCES request_events (event_id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS request_event_types (
@@ -146,54 +153,106 @@ CREATE TABLE IF NOT EXISTS users (
     KEY idx_users_email (email)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE OR REPLACE VIEW v_request_events AS
+SELECT
+    re.event_id,
+    re.event_code,
+    re.detected_at,
+    re.verdict,
+    re.action,
+    re.confidence_score,
+    re.primary_attack_type,
+    re.waf_rule,
+    re.latency_ms,
+    re.client_ip,
+    re.client_country,
+    re.created_at,
+    rh.http_method,
+    rh.uri,
+    rh.host_header,
+    rh.`host`,
+    rh.http_connection,
+    rh.accept_header,
+    rh.accept_charset,
+    rh.accept_language,
+    rh.cache_control,
+    rh.cookie,
+    rh.pragma_header,
+    rh.user_agent,
+    rh.content_length,
+    rh.content_type,
+    rh.post_data,
+    rh.get_query,
+    rh.request_headers,
+    rm.has_sql_kw,
+    rm.has_xss_kw,
+    rm.has_traversal,
+    rm.has_encoded,
+    rm.has_admin,
+    rm.cnt_equal,
+    rm.cnt_ampersand,
+    rm.cnt_percent,
+    rm.cnt_slash,
+    rm.cnt_dot,
+    rm.cnt_quote,
+    rm.cnt_semicolon,
+    rm.cnt_comment,
+    rm.len_uri,
+    rm.len_get_query,
+    rm.len_post_data,
+    rm.len_cookie,
+    rm.len_user_agent
+FROM request_events re
+INNER JOIN request_http rh ON rh.event_id = re.event_id
+INNER JOIN request_ml_indicators rm ON rm.event_id = re.event_id;
 
 DELIMITER $$
 
-CREATE TRIGGER before_request_event_insert
-BEFORE INSERT ON request_events
+CREATE TRIGGER after_request_ml_indicators_insert
+AFTER INSERT ON request_ml_indicators
 FOR EACH ROW
 BEGIN
-    IF NEW.verdict <> 'anomalous' THEN
-        SET NEW.primary_attack_type = NULL;
-    ELSEIF NEW.has_sql_kw = 1 THEN
-        SET NEW.primary_attack_type = 'sqli';
-    ELSEIF NEW.has_xss_kw = 1 THEN
-        SET NEW.primary_attack_type = 'xss';
-    ELSEIF NEW.has_traversal = 1 THEN
-        SET NEW.primary_attack_type = 'traversal';
-    ELSEIF NEW.has_encoded = 1 THEN
-        SET NEW.primary_attack_type = 'encoded';
-    ELSEIF NEW.has_admin = 1 THEN
-        SET NEW.primary_attack_type = 'admin';
-    ELSE
-        SET NEW.primary_attack_type = 'other';
-    END IF;
-END$$
+    DECLARE v_verdict VARCHAR(20);
+    DECLARE v_primary VARCHAR(32) DEFAULT NULL;
 
-CREATE TRIGGER after_request_event_insert
-AFTER INSERT ON request_events
-FOR EACH ROW
-BEGIN
-    IF NEW.verdict = 'anomalous' THEN
+    SELECT verdict INTO v_verdict
+    FROM request_events
+    WHERE event_id = NEW.event_id;
+
+    DELETE FROM request_event_types WHERE event_id = NEW.event_id;
+
+    IF v_verdict = 'anomalous' THEN
         IF NEW.has_sql_kw = 1 THEN
             INSERT INTO request_event_types (event_id, attack_type_id) VALUES (NEW.event_id, 1);
+            SET v_primary = IFNULL(v_primary, 'sqli');
         END IF;
         IF NEW.has_xss_kw = 1 THEN
             INSERT INTO request_event_types (event_id, attack_type_id) VALUES (NEW.event_id, 2);
+            SET v_primary = IFNULL(v_primary, 'xss');
         END IF;
         IF NEW.has_traversal = 1 THEN
             INSERT INTO request_event_types (event_id, attack_type_id) VALUES (NEW.event_id, 3);
+            SET v_primary = IFNULL(v_primary, 'traversal');
         END IF;
         IF NEW.has_encoded = 1 THEN
             INSERT INTO request_event_types (event_id, attack_type_id) VALUES (NEW.event_id, 4);
+            SET v_primary = IFNULL(v_primary, 'encoded');
         END IF;
         IF NEW.has_admin = 1 THEN
             INSERT INTO request_event_types (event_id, attack_type_id) VALUES (NEW.event_id, 5);
+            SET v_primary = IFNULL(v_primary, 'admin');
         END IF;
-        IF NEW.has_sql_kw = 0 AND NEW.has_xss_kw = 0 AND NEW.has_traversal = 0
-           AND NEW.has_encoded = 0 AND NEW.has_admin = 0 THEN
+        IF v_primary IS NULL THEN
             INSERT INTO request_event_types (event_id, attack_type_id) VALUES (NEW.event_id, 6);
+            SET v_primary = 'other';
         END IF;
+        UPDATE request_events
+        SET primary_attack_type = v_primary
+        WHERE event_id = NEW.event_id;
+    ELSE
+        UPDATE request_events
+        SET primary_attack_type = NULL
+        WHERE event_id = NEW.event_id;
     END IF;
 END$$
 
@@ -329,12 +388,13 @@ LIMIT 20;
 
 CREATE OR REPLACE VIEW v_top_endpoints AS
 SELECT
-    re.uri AS uri,
+    rh.uri AS uri,
     SUM(CASE WHEN re.verdict = 'anomalous' THEN 1 ELSE 0 END) AS attacks,
     COUNT(*) AS total
 FROM request_events re
+INNER JOIN request_http rh ON rh.event_id = re.event_id
 WHERE re.detected_at >= NOW() - INTERVAL 24 HOUR
-GROUP BY re.uri
+GROUP BY rh.uri
 ORDER BY attacks DESC, total DESC
 LIMIT 20;
 
@@ -382,22 +442,22 @@ SELECT
     IFNULL(re.event_code, CONCAT('evt-', REPLACE(re.event_id, '-', ''))) AS id,
     DATE_FORMAT(re.detected_at, '%H:%i:%s') AS ts,
     re.client_ip AS ip,
-    re.http_method AS method,
-    re.uri AS uri,
+    rh.http_method AS method,
+    rh.uri AS uri,
     re.verdict AS verdict,
     re.action AS action,
     re.confidence_score AS score,
     re.primary_attack_type AS attack_type,
     re.waf_rule AS rule,
-    re.post_data AS body,
+    rh.post_data AS body,
     IFNULL(
-        re.request_headers,
+        rh.request_headers,
         JSON_OBJECT(
-            'Host', IFNULL(re.`host`, re.host_header),
-            'User-Agent', re.user_agent,
-            'Content-Type', re.content_type,
-            'Content-Length', IF(re.content_length = 0, NULL, CAST(re.content_length AS CHAR)),
-            'Cookie', re.cookie
+            'Host', IFNULL(rh.`host`, rh.host_header),
+            'User-Agent', rh.user_agent,
+            'Content-Type', rh.content_type,
+            'Content-Length', IF(rh.content_length = 0, NULL, CAST(rh.content_length AS CHAR)),
+            'Cookie', rh.cookie
         )
     ) AS headers,
     IFNULL((
@@ -412,6 +472,7 @@ SELECT
         WHERE f.event_id = re.event_id
     ), JSON_ARRAY()) AS features
 FROM request_events re
+INNER JOIN request_http rh ON rh.event_id = re.event_id
 ORDER BY re.detected_at DESC
 LIMIT 200;
 
