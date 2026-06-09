@@ -254,6 +254,7 @@ x["ua_browser"] = ua.str.contains(
 x["ua_len"] = ua.str.len()
 x["ua_word_count"] = ua.str.split().str.len().fillna(0)
 
+#
 
 # Categorical variables with low cardinality
 cat_cols = ["Method", "Host-Header"]
