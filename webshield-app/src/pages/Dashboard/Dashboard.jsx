@@ -8,19 +8,13 @@ import TopEndpoints from './components/TopEndpoints'
 import ModelHealth from './components/ModelHealth'
 import LiveEvents from './components/LiveEvents'
 import EventDrawer from './components/EventDrawer'
-import {
-  kpis,
-  timeline,
-  attackTypes,
-  topIPs,
-  topEndpoints,
-  modelHealth,
-  recentEvents,
-} from './mockData'
+import { useDashboardData } from './useDashboardData'
+import './Dashboard.css'
 
 export default function Dashboard() {
   const [selectedEvent, setSelectedEvent] = useState(null)
   const [timeRange, setTimeRange] = useState('24h')
+  const { data, loading, error, reload } = useDashboardData()
 
   return (
     <AppShell timeRange={timeRange} onTimeRangeChange={setTimeRange}>
@@ -28,39 +22,41 @@ export default function Dashboard() {
         <span>SOC</span>
         <span aria-hidden="true">/</span>
         <span>Overview</span>
-        <span className="ml-auto bg-amber-soft text-amber font-mono text-[10px] px-2 py-1 rounded-full tracking-wide uppercase">
-          BOCETO — datos simulados
-        </span>
+        {loading && !data && <span className="dash__breadcrumb-tag">Cargando…</span>}
+        {error && <span className="dash__breadcrumb-tag dash__breadcrumb-tag--error">{error}</span>}
+        {data && !error && <span className="dash__breadcrumb-tag dash__breadcrumb-tag--live">Datos en vivo · MySQL</span>}
       </div>
 
-      <section className="grid gap-4 grid-cols-6 max-[1400px]:grid-cols-3" aria-label="Indicadores clave">
-        {kpis.map((k) => <KpiCard key={k.id} {...k} />)}
-      </section>
+      {error && !data && (
+        <section className="dash__error">
+          <p>No se pudo conectar con la base de datos.</p>
+          <p className="dash__error-detail">Asegúrate de que MySQL esté corriendo y el API en el puerto 3001.</p>
+          <button type="button" className="btn btn--primary" onClick={reload}>Reintentar</button>
+        </section>
+      )}
 
-      <section className="grid gap-4 grid-cols-12">
-        <div className="col-span-8 max-[1100px]:col-span-12">
-          <TrafficTimeline data={timeline} />
-        </div>
-        <div className="col-span-4 max-[1100px]:col-span-12">
-          <AttackDonut data={attackTypes} />
-        </div>
-      </section>
+      {data && (
+        <>
+          <section className="grid grid--kpis" aria-label="Indicadores clave">
+            {data.kpis.map((k) => <KpiCard key={k.id} {...k} />)}
+          </section>
 
-      <section className="grid gap-4 grid-cols-12">
-        <div className="col-span-5 max-[1100px]:col-span-12">
-          <TopAttackerIPs data={topIPs} />
-        </div>
-        <div className="col-span-4 max-[1100px]:col-span-12">
-          <TopEndpoints data={topEndpoints} />
-        </div>
-        <div className="col-span-3 max-[1100px]:col-span-12">
-          <ModelHealth data={modelHealth} />
-        </div>
-      </section>
+          <section className="grid grid--charts">
+            <div className="grid__span-8"><TrafficTimeline data={data.timeline} /></div>
+            <div className="grid__span-4"><AttackDonut data={data.attackTypes} /></div>
+          </section>
 
-      <section className="grid gap-4 grid-cols-12">
-        <LiveEvents events={recentEvents} onSelectEvent={setSelectedEvent} />
-      </section>
+          <section className="grid grid--widgets">
+            <div className="grid__span-5"><TopAttackerIPs data={data.topIPs} /></div>
+            <div className="grid__span-4"><TopEndpoints data={data.topEndpoints} /></div>
+            <div className="grid__span-3"><ModelHealth data={data.modelHealth} /></div>
+          </section>
+
+          <section className="grid grid--live">
+            <LiveEvents events={data.recentEvents} onSelectEvent={setSelectedEvent} />
+          </section>
+        </>
+      )}
 
       <EventDrawer event={selectedEvent} onClose={() => setSelectedEvent(null)} />
     </AppShell>

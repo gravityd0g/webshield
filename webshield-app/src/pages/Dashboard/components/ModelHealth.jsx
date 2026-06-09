@@ -1,5 +1,16 @@
+// Salud del modelo: requests/seg, accuracy en ventana móvil,
+// drift y un mini histograma de confianza para visualizar calibración.
+
+const STATUS_DOT = {
+  healthy: 'badge badge--ok',
+  degraded: 'badge badge--warn',
+  critical: 'badge badge--danger',
+  failing: 'badge badge--danger',
+}
+
 export default function ModelHealth({ data }) {
-  const maxBin = Math.max(...data.confidenceHistogram.map((b) => b.count))
+  const histogram = data.confidenceHistogram ?? []
+  const maxBin = histogram.length ? Math.max(...histogram.map((b) => b.count)) : 1
   return (
     <section
       className="bg-gradient-to-b from-bg-2 to-bg-1 border border-border rounded-[14px] px-[18px] pt-[18px] pb-4 shadow-panel flex flex-col gap-3.5 min-w-0"
@@ -43,10 +54,10 @@ export default function ModelHealth({ data }) {
         </div>
       </dl>
 
-      <div className="flex flex-col gap-1.5 mt-1" aria-label="Distribución de confianza del modelo">
-        <p className="m-0 text-[11px] text-fg-dim uppercase tracking-wide">Distribución de confianza</p>
-        <div className="flex items-end gap-[3px] h-[60px]">
-          {data.confidenceHistogram.map((b, i) => (
+      <div className="histogram" aria-label="Distribución de confianza del modelo">
+        <p className="histogram__title">Distribución de confianza</p>
+        <div className="histogram__bars">
+          {histogram.map((b, i) => (
             <div
               key={b.bin}
               className={
@@ -60,8 +71,8 @@ export default function ModelHealth({ data }) {
               title={`${b.bin}: ${b.count}`}
             />
           ))}
-        </div>
-        <div className="flex justify-between text-[10px] text-fg-dim">
+        </div> 
+        <div className="histogram__axis">
           <span>valid</span>
           <span>incierto</span>
           <span>anómalo</span>
