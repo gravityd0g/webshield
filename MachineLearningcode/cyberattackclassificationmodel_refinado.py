@@ -105,6 +105,65 @@ x["cnt_quote"] = request_text.str.count(r"'") + request_text.str.count(r'"')
 x["cnt_semicolon"] = request_text.str.count(r";")
 x["cnt_comment"] = request_text.str.count(r"--")
 
+# Extended OWASP CRS attack-category indicators
+
+# CRS 932 — Remote Code Execution
+x["has_rce_kw"] = request_text.str.contains(
+    r"\b(?:eval|exec|system|passthru|shell_exec|popen|proc_open|assert|create_function)\b|"
+    r"\$\(|`[^`]+`|"
+    r";\s*(?:cat|ls|whoami|id|uname|ps|wget|curl|nc|ncat|telnet|chmod|rm)\b|"
+    r"\|\s*(?:cat|ls|whoami|id|uname|ps|wget|curl|nc|ncat)\b|"
+    r"&&\s*(?:cat|ls|whoami|id|uname)|"
+    r"/bin/(?:sh|bash|dash|csh|tcsh|zsh)|/usr/bin/|/usr/local/bin/",
+    regex=True,
+).astype(int)
+
+# CRS 930 — Local File Inclusion
+x["has_lfi_kw"] = request_text.str.contains(
+    r"/etc/(?:passwd|shadow|hosts|group|sudoers|nginx|apache)|"
+    r"/proc/self/|/proc/version|/proc/cpuinfo|"
+    r"php://(?:filter|input|memory|fd)|"
+    r"file://|expect://|data:text",
+    regex=True,
+).astype(int)
+
+# CRS 931 — Remote File Inclusion
+x["has_rfi_kw"] = request_text.str.contains(
+    r"=https?://|=ftp://|file=https?://|include=https?://|page=https?://",
+    regex=True,
+).astype(int)
+
+# CRS 933 — PHP attacks
+x["has_php_attack"] = request_text.str.contains(
+    r"<\?php|<\?=|"
+    r"\$_(?:get|post|request|cookie|server|env|files|session|globals)|"
+    r"base64_decode|gzinflate|str_rot13|"
+    r"preg_replace.*?/e|php://",
+    regex=True,
+).astype(int)
+
+# XXE — XML External Entity
+x["has_xxe"] = request_text.str.contains(
+    r"<!entity|<!doctype[^>]*\[|system\s+[\"']file:|system\s+[\"']http:",
+    regex=True,
+).astype(int)
+
+# CRS 944 — Log4Shell / JNDI injection
+x["has_log4j"] = request_text.str.contains(
+    r"\$\{jndi:|\$\{lower:|\$\{upper:|"
+    r"ldap://|ldaps://|rmi://|nis://|nds://|iiop://|corba://|dns://",
+    regex=True,
+).astype(int)
+
+# NoSQL injection
+x["has_nosql"] = request_text.str.contains(
+    r"\$ne\b|\$gt\b|\$lt\b|\$gte\b|\$lte\b|\$in\b|\$nin\b|"
+    r"\$or\b|\$and\b|\$where\b|\$regex\b|\$exists\b|"
+    r"db\.[a-z_]+\.(?:drop|find|update|remove|delete|insert)",
+    regex=True,
+).astype(int)
+
+
 # Categorical variables with low cardinality
 cat_cols = ["Method", "Host-Header"]
 
