@@ -227,6 +227,33 @@ x["has_null_byte"] = request_text.str.contains(
     regex=True,
 ).astype(int)
 
+# User-Agent fingerprinting (CRS 913 — scanner detection)
+ua = df["User-Agent"].astype(str).str.lower()
+
+# Scanners y herramientas ofensivas conocidas
+x["ua_scanner"] = ua.str.contains(
+    r"nikto|sqlmap|nmap|w3af|burp|acunetix|nessus|openvas|"
+    r"masscan|fimap|wfuzz|skipfish|nuclei|httpx|"
+    r"dirb|gobuster|wpscan|hydra|metasploit",
+    regex=True,
+).astype(int)
+
+# Librerias HTTP - potencialmente bots / clientes automatizados
+x["ua_lib"] = ua.str.contains(
+    r"curl/|wget/|python-requests|python-urllib|libcurl|"
+    r"java/|go-http-client|okhttp|apache-httpclient|node-fetch",
+    regex=True,
+).astype(int)
+
+# Navegadores reales (señal de trafico humano legit)
+x["ua_browser"] = ua.str.contains(
+    r"mozilla/|applewebkit|chrome/|firefox/|safari/|edge/|opera/",
+    regex=True,
+).astype(int)
+
+x["ua_len"] = ua.str.len()
+x["ua_word_count"] = ua.str.split().str.len().fillna(0)
+
 
 # Categorical variables with low cardinality
 cat_cols = ["Method", "Host-Header"]
