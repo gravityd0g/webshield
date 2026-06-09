@@ -163,6 +163,70 @@ x["has_nosql"] = request_text.str.contains(
     regex=True,
 ).astype(int)
 
+# PHP serialized objects (deserialization attacks)
+x["has_serialization"] = request_text.str.contains(
+    r"o:\d+:\"|a:\d+:\{|s:\d+:\"|i:\d+;|b:[01];",
+    regex=True,
+).astype(int)
+
+# CRS 941 — XSS expanded
+x["has_xss_advanced"] = request_text.str.contains(
+    r"on(?:load|error|mouseover|focus|click|keyup|submit|change|blur)\s*=|"
+    r"javascript:|data:text/html|vbscript:|"
+    r"<svg|<iframe|<embed|<object|"
+    r"alert\(|prompt\(|confirm\(|"
+    r"document\.cookie|document\.write|window\.location",
+    regex=True,
+).astype(int)
+
+# CRS 942 — SQLi expanded
+x["has_sql_advanced"] = request_text.str.contains(
+    r"union\s+(?:all\s+)?select|"
+    r"information_schema|"
+    r"\bsleep\s*\(|benchmark\s*\(|waitfor\s+delay|"
+    r"\bchar\s*\(\s*\d+|\bascii\s*\(|substr(?:ing)?\s*\(|"
+    r"or\s+\d+\s*=\s*\d+|or\s+[\"']\w+[\"']\s*=\s*[\"']\w+[\"']|"
+    r"--[ \t]|/\*.*?\*/|#\s",
+    regex=True,
+).astype(int)
+
+# Sensitive file probing
+x["has_sensitive_file"] = request_text.str.contains(
+    r"\.git/|\.env\b|\.htaccess|\.htpasswd|"
+    r"\.bak\b|\.backup\b|\.old\b|\.orig\b|\.swp\b|\.swo\b|"
+    r"web\.config|wp-config\.php|configuration\.php|"
+    r"\.ds_store|\.ssh/|id_rsa|\.pem\b|\.key\b|"
+    r"/.well-known/",
+    regex=True,
+).astype(int)
+
+# Admin/management paths probing
+x["has_admin_path"] = request_text.str.contains(
+    r"/admin|/administrator|/wp-admin|/wp-login|"
+    r"/phpmyadmin|/pma\b|/myadmin|/dbadmin|/sqladmin|"
+    r"/manager|/console|/dashboard|/cpanel|"
+    r"/_admin|/sysadmin|/adminer|/setup\.php|/install\.php",
+    regex=True,
+).astype(int)
+
+# Suspicious script extensions
+x["has_shell_extension"] = request_text.str.contains(
+    r"\.(?:sh|pl|py|rb|jsp|asp|aspx|cgi|cmd|bat|war|jar)(?:[?\b/]|$)",
+    regex=True,
+).astype(int)
+
+# Double URL encoding (evasion)
+x["has_double_encoded"] = request_text.str.contains(
+    r"%25(?:3c|3e|22|27|28|29|2f|5c|3d|26|2e)",
+    regex=True,
+).astype(int)
+
+# Null byte injection
+x["has_null_byte"] = request_text.str.contains(
+    r"%00|\\x00|\\u0000",
+    regex=True,
+).astype(int)
+
 
 # Categorical variables with low cardinality
 cat_cols = ["Method", "Host-Header"]
