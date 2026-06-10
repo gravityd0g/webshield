@@ -8,11 +8,11 @@ import pandas as pd
 from fastapi import FastAPI, Header, HTTPException
 from pydantic import BaseModel, Field
 
-from ml_api.features import build_features
+from features import build_features
 
 
 MODEL_PATH = os.getenv("MODEL_PATH", "models/webshield_rf_v1.joblib")
-ANOMALY_THRESHOLD = float(os.getenv("ANOMALY_THRESHOLD", "0.90"))
+ANOMALY_THRESHOLD = float(os.getenv("ANOMALY_THRESHOLD", "0.50"))
 INTERNAL_API_KEY = os.getenv("INTERNAL_API_KEY", "")
 
 _model_lock = threading.Lock()
