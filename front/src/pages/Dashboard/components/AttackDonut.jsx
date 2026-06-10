@@ -16,33 +16,29 @@ function arc(start, end) {
   return `M${x1},${y1} A${RADIUS},${RADIUS} 0 ${large} 1 ${x2},${y2}`
 }
 
-export default function AttackDonut({ data }) {
-  if (!data?.length) {
-    return (
-      <section className="panel panel--chart" aria-labelledby="attacks-title">
-        <header className="panel__header">
-          <div>
-            <h2 id="attacks-title" className="panel__title">Distribución de ataques</h2>
-            <p className="panel__sub">Sin bloqueos en las últimas 24h</p>
-          </div>
-        </header>
-      </section>
-    )
-  }
+function EmptyDonut() {
+  return (
+    <section
+      className="bg-gradient-to-b from-bg-2 to-bg-1 border border-border rounded-[14px] px-[18px] pt-[18px] pb-4 shadow-panel flex flex-col gap-3.5 min-w-0 min-h-80"
+      aria-labelledby="attacks-title"
+    >
+      <header className="flex items-start justify-between gap-4">
+        <div>
+          <h2 id="attacks-title" className="m-0 text-sm font-semibold tracking-wide text-fg">
+            Distribución de ataques
+          </h2>
+          <p className="mt-0.5 mb-0 text-[11px] text-fg-dim">Sin bloqueos en las últimas 24h</p>
+        </div>
+      </header>
+    </section>
+  )
+}
 
+export default function AttackDonut({ data }) {
+  if (!data?.length) return <EmptyDonut />
   const total = data.reduce((s, d) => s + d.value, 0)
-  if (total <= 0) {
-    return (
-      <section className="panel panel--chart" aria-labelledby="attacks-title">
-        <header className="panel__header">
-          <div>
-            <h2 id="attacks-title" className="panel__title">Distribución de ataques</h2>
-            <p className="panel__sub">Sin bloqueos en las últimas 24h</p>
-          </div>
-        </header>
-      </section>
-    )
-  }
+  if (total <= 0) return <EmptyDonut />
+
   let cursor = 0
   const segments = data.map((d) => {
     const start = (cursor / total) * 360

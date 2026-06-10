@@ -1,8 +1,9 @@
-// Mock data para el boceto del dashboard SOC.
-// Reemplazar con llamadas reales al backend (issues #8 y #10) cuando esté.
+// Fixture local del dashboard. Mientras el backend no está conectado a la
+// DB nueva, useDashboardData consume estas constantes (USE_MOCK = true).
+// Cuando el backend devuelva el mismo shape, el archivo queda para tests/dev.
 //
-// Los eventos están inspirados en patrones reales del dataset ECML/PKDD 2007
-// que usa nuestro modelo (SQLi, XSS, path traversal, encoded payloads, admin probing).
+// Los eventos siguen el dataset ECML/PKDD 2007 (SQLi, XSS, path traversal,
+// encoded payloads, admin probing).
 
 export const kpis = [
   {

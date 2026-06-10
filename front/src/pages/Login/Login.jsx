@@ -62,7 +62,7 @@ export default function Login({ onLogin }) {
     setLoading(true)
     setTimeout(() => {
       setLoading(false)
-      if (onLogin) onLogin({ email })
+      onLogin({ email })
     }, 800)
   }
 
