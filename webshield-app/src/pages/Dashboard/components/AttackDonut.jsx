@@ -17,7 +17,32 @@ function arc(start, end) {
 }
 
 export default function AttackDonut({ data }) {
+  if (!data?.length) {
+    return (
+      <section className="panel panel--chart" aria-labelledby="attacks-title">
+        <header className="panel__header">
+          <div>
+            <h2 id="attacks-title" className="panel__title">Distribución de ataques</h2>
+            <p className="panel__sub">Sin bloqueos en las últimas 24h</p>
+          </div>
+        </header>
+      </section>
+    )
+  }
+
   const total = data.reduce((s, d) => s + d.value, 0)
+  if (total <= 0) {
+    return (
+      <section className="panel panel--chart" aria-labelledby="attacks-title">
+        <header className="panel__header">
+          <div>
+            <h2 id="attacks-title" className="panel__title">Distribución de ataques</h2>
+            <p className="panel__sub">Sin bloqueos en las últimas 24h</p>
+          </div>
+        </header>
+      </section>
+    )
+  }
   let cursor = 0
   const segments = data.map((d) => {
     const start = (cursor / total) * 360

@@ -41,24 +41,24 @@ SELECT re.event_id, v.http_method, v.uri, v.host_header, v.host, v.user_agent,
 FROM request_events re
 JOIN (
     SELECT 'evt-9281' AS event_code, 'POST' AS http_method, '/api/login' AS uri,
-           'HTTP/1.1' AS host_header, 'webshield.lab.tec.local' AS host, 'curl/8.4.0' AS user_agent,
+           'HTTPS/1.1' AS host_header, 'webshield.lab.tec.local' AS host, 'curl/8.4.0' AS user_agent,
            52 AS content_length, 'application/json' AS content_type,
            '{"username":"admin","password":"'' OR 1=1 --"}' AS post_data, NULL AS get_query,
            JSON_OBJECT('Host', 'webshield.lab.tec.local', 'User-Agent', 'curl/8.4.0', 'Content-Type', 'application/json', 'Content-Length', '52') AS request_headers
-    UNION ALL SELECT 'evt-9280', 'GET', '/index.html', 'HTTP/1.1', 'webshield.lab.tec.local', 'Mozilla/5.0',
+    UNION ALL SELECT 'evt-9280', 'GET', '/index.html', 'HTTPS/1.1', 'webshield.lab.tec.local', 'Mozilla/5.0',
            0, NULL, NULL, NULL, JSON_OBJECT('Host', 'webshield.lab.tec.local', 'User-Agent', 'Mozilla/5.0')
-    UNION ALL SELECT 'evt-9279', 'GET', '/search', 'HTTP/1.1', 'webshield.lab.tec.local', 'sqlmap/1.7.11',
+    UNION ALL SELECT 'evt-9279', 'GET', '/search', 'HTTPS/1.1', 'webshield.lab.tec.local', 'sqlmap/1.7.11',
            0, NULL, NULL, 'q=%3Cscript%3Ealert(1)%3C%2Fscript%3E',
            JSON_OBJECT('Host', 'webshield.lab.tec.local', 'User-Agent', 'sqlmap/1.7.11', 'Referer', '/')
-    UNION ALL SELECT 'evt-9278', 'GET', '/api/products', 'HTTP/1.1', 'webshield.lab.tec.local', 'Mozilla/5.0',
+    UNION ALL SELECT 'evt-9278', 'GET', '/api/products', 'HTTPS/1.1', 'webshield.lab.tec.local', 'Mozilla/5.0',
            0, NULL, NULL, 'category=electronics', JSON_OBJECT('Host', 'webshield.lab.tec.local', 'User-Agent', 'Mozilla/5.0')
-    UNION ALL SELECT 'evt-9277', 'GET', '/../../../../etc/passwd', 'HTTP/1.1', 'webshield.lab.tec.local', 'python-requests/2.31.0',
+    UNION ALL SELECT 'evt-9277', 'GET', '/../../../../etc/passwd', 'HTTPS/1.1', 'webshield.lab.tec.local', 'python-requests/2.31.0',
            0, NULL, NULL, NULL, JSON_OBJECT('Host', 'webshield.lab.tec.local', 'User-Agent', 'python-requests/2.31.0')
-    UNION ALL SELECT 'evt-9275', 'GET', '/admin/config.php', 'HTTP/1.1', 'webshield.lab.tec.local', 'Mozilla/5.0',
+    UNION ALL SELECT 'evt-9275', 'GET', '/admin/config.php', 'HTTPS/1.1', 'webshield.lab.tec.local', 'Mozilla/5.0',
            0, NULL, NULL, NULL, JSON_OBJECT('Host', 'webshield.lab.tec.local', 'User-Agent', 'Mozilla/5.0')
-    UNION ALL SELECT 'evt-9273', 'GET', '/wp-admin/setup-config.php', 'HTTP/1.1', 'webshield.lab.tec.local', 'Mozilla/5.0 (compatible; Nmap NSE)',
+    UNION ALL SELECT 'evt-9273', 'GET', '/wp-admin/setup-config.php', 'HTTPS/1.1', 'webshield.lab.tec.local', 'Mozilla/5.0 (compatible; Nmap NSE)',
            0, NULL, NULL, 'step=1', JSON_OBJECT('Host', 'webshield.lab.tec.local', 'User-Agent', 'Mozilla/5.0 (compatible; Nmap NSE)')
-    UNION ALL SELECT 'evt-9272', 'GET', '/api/user/1%20OR%201%3D1', 'HTTP/1.1', 'webshield.lab.tec.local', 'curl/8.4.0',
+    UNION ALL SELECT 'evt-9272', 'GET', '/api/user/1%20OR%201%3D1', 'HTTPS/1.1', 'webshield.lab.tec.local', 'curl/8.4.0',
            0, NULL, NULL, NULL, JSON_OBJECT('Host', 'webshield.lab.tec.local', 'User-Agent', 'curl/8.4.0')
 ) v ON re.event_code = v.event_code;
 

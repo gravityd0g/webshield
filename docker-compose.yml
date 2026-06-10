@@ -1,0 +1,18 @@
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: webshield-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: webshield
+      MYSQL_DATABASE: webshield
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./database/webshield.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./database/webshield_data.sql:/docker-entrypoint-initdb.d/02-data.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-pwebshield"]
+      interval: 5s
+      timeout: 5s
+      retries: 10

@@ -1,5 +1,18 @@
 export default function TopEndpoints({ data }) {
-  const maxAttacks = Math.max(...data.map((d) => d.attacks))
+  if (!data?.length) {
+    return (
+      <section className="panel" aria-labelledby="top-endpoints-title">
+        <header className="panel__header">
+          <div>
+            <h2 id="top-endpoints-title" className="panel__title">Endpoints más atacados</h2>
+            <p className="panel__sub">Sin datos en las últimas 24h</p>
+          </div>
+        </header>
+      </section>
+    )
+  }
+
+  const maxAttacks = Math.max(...data.map((d) => d.attacks), 1)
   return (
     <section
       className="bg-gradient-to-b from-bg-2 to-bg-1 border border-border rounded-[14px] px-[18px] pt-[18px] pb-4 shadow-panel flex flex-col gap-3.5 min-w-0"

@@ -19,11 +19,12 @@ export default function TrafficTimeline({ data }) {
   const valid = buckets.map((b) => b.valid)
   const anom = buckets.map((b) => b.anomalous)
   const stacked = valid.map((v, i) => v + anom[i])
-  const maxY = Math.max(...stacked) * 1.05
+  const peak = stacked.length ? Math.max(...stacked) : 0
+  const maxY = Math.max(peak, 1) * 1.05
 
   const innerW = W - PAD.l - PAD.r
   const innerH = H - PAD.t - PAD.b
-  const scaleX = (i) => PAD.l + (i / (n - 1)) * innerW
+  const scaleX = (i) => PAD.l + (n <= 1 ? 0 : (i / (n - 1)) * innerW)
   const scaleY = (v) => PAD.t + innerH - (v / maxY) * innerH
 
   const validPath = buildArea(valid, scaleX, scaleY, null)

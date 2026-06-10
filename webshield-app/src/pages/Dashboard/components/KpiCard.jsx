@@ -1,5 +1,6 @@
 function Sparkline({ points, accent }) {
-  if (!points || points.length === 0) return null
+  if (!points || points.length < 2) return null
+  if (points.every((p) => p === 0)) return null
   const w = 110
   const h = 36
   const min = Math.min(...points)
