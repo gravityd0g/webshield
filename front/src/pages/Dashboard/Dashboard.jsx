@@ -20,12 +20,11 @@ export default function Dashboard({ currentUser }) {
   return (
     <AppShell timeRange={timeRange} onTimeRangeChange={setTimeRange} currentUser={currentUser}>
       <div className="flex items-center gap-2 text-xs text-fg-muted mb-1">
-        <span>SOC</span>
-        <span aria-hidden="true">/</span>
+        
         <span>Overview</span>
         {loading && !data && <span className={`${BREADCRUMB_TAG} bg-amber-soft text-amber`}>Cargando…</span>}
         {error && <span className={`${BREADCRUMB_TAG} bg-rose-soft text-rose`}>{error}</span>}
-        {data && !error && <span className={`${BREADCRUMB_TAG} bg-cyan-soft text-cyan`}>Datos en vivo · MySQL</span>}
+        {data && !error && <span className={`${BREADCRUMB_TAG} bg-cyan-soft text-cyan`}>Datos en vivo</span>}
       </div>
 
       {error && !data && (
