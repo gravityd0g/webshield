@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nueva Receta — Recetario</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg sticky-top">
+  <div class="container">
+    <a class="navbar-brand" href="/">Recet<span>ario</span></a>
+    <div class="ms-auto d-flex gap-2">
+      <a href="/recetas.html" class="btn btn-outline-naranja btn-sm">Ver Recetas</a>
+      <button class="btn btn-outline-naranja btn-sm" onclick="cerrarSesion()">Salir</button>
+    </div>
+  </div>
+</nav>
+
+<div class="container py-5" style="max-width:800px;">
+  <h2 style="font-family:Georgia,serif;font-weight:700;margin-bottom:.3rem;">Nueva receta</h2>
+  <p style="color:var(--muted);font-family:'Segoe UI',sans-serif;font-size:.9rem;margin-bottom:1.5rem;">Comparte tu receta con la comunidad</p>
+
+  <div id="error-msg" class="alert alert-danger d-none"></div>
+
+  <form id="form-receta" class="form-receta">
+    <!-- Info básica -->
+    <div class="card border-0 shadow-sm rounded-3 p-4 mb-4">
+      <h5 style="font-family:Georgia,serif;font-weight:700;margin-bottom:1rem;">Información básica</h5>
+      <div class="mb-3">
+        <label class="form-label">Título de la receta *</label>
+        <input type="text" id="titulo" class="form-control form-control-lg" placeholder="Ej: Tacos de Carnitas" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Descripción</label>
+        <textarea id="descripcion" class="form-control" rows="3" placeholder="Describe brevemente tu receta..."></textarea>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">URL de imagen (opcional)</label>
+        <input type="url" id="imagen_url" class="form-control" placeholder="https://...">
+        <div class="form-text">Pega un link de imagen de internet</div>
+      </div>
+      <div class="row g-3">
+        <div class="col-md-3">
+          <label class="form-label">Categoría</label>
+          <select id="categoria_id" class="form-select"><option value="">Sin categoría</option></select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Dificultad</label>
+          <select id="dificultad" class="form-select">
+            <option value="Fácil">🟢 Fácil</option>
+            <option value="Media">🟡 Media</option>
+            <option value="Difícil">🔴 Difícil</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">Prep (min)</label>
+          <input type="number" id="tiempo_prep" class="form-control" min="0" placeholder="15">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">Cocción (min)</label>
+          <input type="number" id="tiempo_coccion" class="form-control" min="0" placeholder="30">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">Porciones</label>
+          <input type="number" id="porciones" class="form-control" min="1" value="4">
+        </div>
+      </div>
+    </div>
+
+    <!-- Ingredientes -->
+    <div class="card border-0 shadow-sm rounded-3 p-4 mb-4">
+      <h5 style="font-family:Georgia,serif;font-weight:700;margin-bottom:1rem;">Ingredientes</h5>
+      <div class="row mb-1" style="font-size:.82rem;color:var(--muted);">
+        <div class="col-7">Ingrediente</div>
+        <div class="col-4">Cantidad</div>
+      </div>
+      <div id="ings-cont"></div>
+      <button type="button" class="btn-add-row mt-2" onclick="addIng()">+ Agregar ingrediente</button>
+    </div>
+
+    <!-- Pasos -->
+    <div class="card border-0 shadow-sm rounded-3 p-4 mb-4">
+      <h5 style="font-family:Georgia,serif;font-weight:700;margin-bottom:1rem;">Pasos de preparación</h5>
+      <div id="pasos-cont"></div>
+      <button type="button" class="btn-add-row mt-2" onclick="addPaso()">+ Agregar paso</button>
+    </div>
+
+    <button type="submit" id="btn-submit" class="btn btn-naranja py-2 px-5 fs-5">Publicar Receta</button>
+  </form>
+</div>
+
+<footer><p><strong>🍳 Recetario</strong> &copy; 2024</p></footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/app.js"></script>
+<script>
+  let ingCount = 0, pasoCount = 0;
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    if (!estaLogueado()) { location.href = '/login.html'; return; }
+    const cats = await api('/api/categorias');
+    const sel = document.getElementById('categoria_id');
+    cats.forEach(c => sel.insertAdjacentHTML('beforeend', `<option value="${c.id}">${c.icono} ${c.nombre}</option>`));
+    // Iniciar con 3 ingredientes y 3 pasos
+    for (let i = 0; i < 4; i++) addIng();
+    for (let i = 0; i < 3; i++) addPaso();
+  });
+
+  function addIng() {
+    ingCount++;
+    document.getElementById('ings-cont').insertAdjacentHTML('beforeend', `
+      <div class="ing-row" id="ing-${ingCount}">
+        <input type="text" class="form-control" placeholder="Ej: Harina" name="ing-nombre">
+        <input type="text" class="form-control" style="max-width:130px" placeholder="Ej: 2 tazas" name="ing-cant">
+        <button type="button" class="btn btn-outline-danger btn-sm px-2" onclick="document.getElementById('ing-${ingCount}').remove()">✕</button>
+      </div>`);
+  }
+
+  function addPaso() {
+    pasoCount++;
+    const n = pasoCount;
+    document.getElementById('pasos-cont').insertAdjacentHTML('beforeend', `
+      <div class="paso-row" id="paso-${n}">
+        <div class="num-label">${n}</div>
+        <textarea class="form-control" rows="2" placeholder="Describe este paso..." name="paso"></textarea>
+        <button type="button" class="btn btn-outline-danger btn-sm px-2" onclick="document.getElementById('paso-${n}').remove()">✕</button>
+      </div>`);
+  }
+
+  document.getElementById('form-receta').addEventListener('submit', async e => {
+    e.preventDefault();
+    const btn = document.getElementById('btn-submit');
+    btn.disabled = true; btn.textContent = 'Publicando...';
+
+    const ingredientes = Array.from(document.querySelectorAll('#ings-cont .ing-row')).map(row => ({
+      nombre:   row.querySelector('[name="ing-nombre"]').value.trim(),
+      cantidad: row.querySelector('[name="ing-cant"]').value.trim()
+    })).filter(i => i.nombre);
+
+    const pasos = Array.from(document.querySelectorAll('#pasos-cont textarea')).map(t => t.value.trim()).filter(Boolean);
+
+    const data = {
+      titulo:         document.getElementById('titulo').value,
+      descripcion:    document.getElementById('descripcion').value,
+      imagen_url:     document.getElementById('imagen_url').value || null,
+      categoria_id:   document.getElementById('categoria_id').value || null,
+      dificultad:     document.getElementById('dificultad').value,
+      tiempo_prep:    parseInt(document.getElementById('tiempo_prep').value) || null,
+      tiempo_coccion: parseInt(document.getElementById('tiempo_coccion').value) || null,
+      porciones:      parseInt(document.getElementById('porciones').value) || 4,
+      ingredientes, pasos
+    };
+
+    const res = await api('/api/recetas', 'POST', data);
+    if (res.id) {
+      location.href = '/receta.html?id=' + res.id;
+    } else {
+      document.getElementById('error-msg').textContent = res.error || 'Error al publicar';
+      document.getElementById('error-msg').classList.remove('d-none');
+      btn.disabled = false; btn.textContent = 'Publicar Receta';
+    }
+  });
+</script>
+</body>
+</html>
