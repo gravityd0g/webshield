@@ -8,11 +8,11 @@ function ShieldIcon() {
   )
 }
 
-function LockIcon() {
+function UserIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+      <circle cx="12" cy="7" r="4" />
     </svg>
   )
 }
@@ -22,6 +22,15 @@ function MailIcon() {
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <rect x="2" y="4" width="20" height="16" rx="2" />
       <path d="M2 7l10 7 10-7" />
+    </svg>
+  )
+}
+
+function LockIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
     </svg>
   )
 }
@@ -43,10 +52,13 @@ function EyeIcon({ off }) {
   )
 }
 
-export default function Login({ onLogin, onGoToRegister }) {
+export default function Register({ onRegistered, onGoToLogin }) {
+  const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirm, setConfirm] = useState('')
   const [showPassword, setShowPassword] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -54,15 +66,23 @@ export default function Login({ onLogin, onGoToRegister }) {
     e.preventDefault()
     setError('')
 
-    if (!email.trim() || !password.trim()) {
+    if (!name.trim() || !email.trim() || !password.trim() || !confirm.trim()) {
       setError('Por favor completa todos los campos.')
+      return
+    }
+    if (password !== confirm) {
+      setError('Las contraseñas no coinciden.')
+      return
+    }
+    if (password.length < 8) {
+      setError('La contraseña debe tener al menos 8 caracteres.')
       return
     }
 
     setLoading(true)
     setTimeout(() => {
       setLoading(false)
-      onLogin({ email })
+      if (onRegistered) onRegistered({ name, email })
     }, 800)
   }
 
@@ -92,26 +112,43 @@ export default function Login({ onLogin, onGoToRegister }) {
           role="main"
         >
           <div className="flex flex-col gap-1">
-            <h1 className="m-0 text-[17px] font-semibold text-fg">Iniciar sesión</h1>
-            <p className="m-0 text-[13px] text-fg-muted">Ingresa tus credenciales para continuar</p>
+            <h1 className="m-0 text-[17px] font-semibold text-fg">Crear cuenta</h1>
+            <p className="m-0 text-[13px] text-fg-muted">Completa el formulario para registrarte</p>
           </div>
 
           <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
 
+            {/* Name field */}
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="name" className="text-[12px] font-medium text-fg-muted uppercase tracking-wide">
+                Nombre completo
+              </label>
+              <div className="flex items-center gap-2.5 px-3 py-2.5 bg-bg-3 border border-border rounded-[10px] text-fg-muted transition-[border-color,background] duration-120 focus-within:border-blue focus-within:bg-bg-2">
+                <UserIcon />
+                <input
+                  id="name"
+                  type="text"
+                  autoComplete="name"
+                  placeholder="Tu nombre"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="flex-1 bg-transparent border-0 text-fg text-[13px] outline-0 placeholder:text-fg-dim"
+                />
+              </div>
+            </div>
+
             {/* Email field */}
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="email" className="text-[12px] font-medium text-fg-muted uppercase tracking-wide">
+              <label htmlFor="reg-email" className="text-[12px] font-medium text-fg-muted uppercase tracking-wide">
                 Correo electrónico
               </label>
-              <div
-                className="flex items-center gap-2.5 px-3 py-2.5 bg-bg-3 border border-border rounded-[10px] text-fg-muted transition-[border-color,background] duration-120 focus-within:border-blue focus-within:bg-bg-2"
-              >
+              <div className="flex items-center gap-2.5 px-3 py-2.5 bg-bg-3 border border-border rounded-[10px] text-fg-muted transition-[border-color,background] duration-120 focus-within:border-blue focus-within:bg-bg-2">
                 <MailIcon />
                 <input
-                  id="email"
+                  id="reg-email"
                   type="email"
                   autoComplete="email"
-                  placeholder="admin@webshield.io"
+                  placeholder="tu@correo.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="flex-1 bg-transparent border-0 text-fg text-[13px] outline-0 placeholder:text-fg-dim"
@@ -121,26 +158,16 @@ export default function Login({ onLogin, onGoToRegister }) {
 
             {/* Password field */}
             <div className="flex flex-col gap-1.5">
-              <div className="flex items-center justify-between">
-                <label htmlFor="password" className="text-[12px] font-medium text-fg-muted uppercase tracking-wide">
-                  Contraseña
-                </label>
-                <button
-                  type="button"
-                  className="text-[11px] text-blue border-0 bg-transparent cursor-pointer p-0 hover:text-fg transition-colors duration-100"
-                >
-                  ¿Olvidaste tu contraseña?
-                </button>
-              </div>
-              <div
-                className="flex items-center gap-2.5 px-3 py-2.5 bg-bg-3 border border-border rounded-[10px] text-fg-muted transition-[border-color,background] duration-120 focus-within:border-blue focus-within:bg-bg-2"
-              >
+              <label htmlFor="reg-password" className="text-[12px] font-medium text-fg-muted uppercase tracking-wide">
+                Contraseña
+              </label>
+              <div className="flex items-center gap-2.5 px-3 py-2.5 bg-bg-3 border border-border rounded-[10px] text-fg-muted transition-[border-color,background] duration-120 focus-within:border-blue focus-within:bg-bg-2">
                 <LockIcon />
                 <input
-                  id="password"
+                  id="reg-password"
                   type={showPassword ? 'text' : 'password'}
-                  autoComplete="current-password"
-                  placeholder="••••••••"
+                  autoComplete="new-password"
+                  placeholder="Mín. 8 caracteres"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="flex-1 bg-transparent border-0 text-fg text-[13px] outline-0 placeholder:text-fg-dim"
@@ -152,6 +179,33 @@ export default function Login({ onLogin, onGoToRegister }) {
                   aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                 >
                   <EyeIcon off={showPassword} />
+                </button>
+              </div>
+            </div>
+
+            {/* Confirm password field */}
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="reg-confirm" className="text-[12px] font-medium text-fg-muted uppercase tracking-wide">
+                Confirmar contraseña
+              </label>
+              <div className="flex items-center gap-2.5 px-3 py-2.5 bg-bg-3 border border-border rounded-[10px] text-fg-muted transition-[border-color,background] duration-120 focus-within:border-blue focus-within:bg-bg-2">
+                <LockIcon />
+                <input
+                  id="reg-confirm"
+                  type={showConfirm ? 'text' : 'password'}
+                  autoComplete="new-password"
+                  placeholder="Repite tu contraseña"
+                  value={confirm}
+                  onChange={(e) => setConfirm(e.target.value)}
+                  className="flex-1 bg-transparent border-0 text-fg text-[13px] outline-0 placeholder:text-fg-dim"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirm((v) => !v)}
+                  className="border-0 bg-transparent cursor-pointer p-0 text-fg-dim hover:text-fg-muted transition-colors duration-100"
+                  aria-label={showConfirm ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                >
+                  <EyeIcon off={showConfirm} />
                 </button>
               </div>
             </div>
@@ -180,24 +234,24 @@ export default function Login({ onLogin, onGoToRegister }) {
                   <svg className="animate-spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
                     <path d="M21 12a9 9 0 1 1-6-8.5" />
                   </svg>
-                  Verificando…
+                  Creando cuenta…
                 </>
               ) : (
-                'Iniciar sesión'
+                'Crear cuenta'
               )}
             </button>
           </form>
         </div>
 
-        {/* Register link */}
+        {/* Login link */}
         <p className="text-center text-[12px] text-fg-dim">
-          ¿No tienes cuenta?{' '}
+          ¿Ya tienes cuenta?{' '}
           <button
             type="button"
-            onClick={onGoToRegister}
+            onClick={onGoToLogin}
             className="text-blue border-0 bg-transparent cursor-pointer p-0 hover:text-fg transition-colors duration-100 font-medium"
           >
-            Crear cuenta nueva
+            Iniciar sesión
           </button>
         </p>
 

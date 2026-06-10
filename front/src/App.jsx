@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import Login from './pages/Login/Login'
+import Register from './pages/Login/Register'
 import Dashboard from './pages/Dashboard/Dashboard'
 import LiveEventsPage from './pages/Dashboard/sections/LiveEventsPage'
 import AlertsPage from './pages/Dashboard/sections/AlertsPage'
@@ -25,9 +26,13 @@ function deriveCurrentUser(rawUser) {
 
 export default function App() {
   const [user, setUser] = useState(null)
+  const [page, setPage] = useState('login')
 
   if (!user) {
-    return <Login onLogin={setUser} />
+    if (page === 'register') {
+      return <Register onRegistered={() => setPage('login')} onGoToLogin={() => setPage('login')} />
+    }
+    return <Login onLogin={setUser} onGoToRegister={() => setPage('register')} />
   }
 
   const currentUser = deriveCurrentUser(user)
