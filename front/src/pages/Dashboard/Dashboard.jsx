@@ -11,13 +11,13 @@ import EventDrawer from './components/EventDrawer'
 import { useDashboardData } from './useDashboardData'
 import './Dashboard.css'
 
-export default function Dashboard() {
+export default function Dashboard({ currentUser }) {
   const [selectedEvent, setSelectedEvent] = useState(null)
   const [timeRange, setTimeRange] = useState('24h')
   const { data, loading, error, reload } = useDashboardData()
 
   return (
-    <AppShell timeRange={timeRange} onTimeRangeChange={setTimeRange}>
+    <AppShell timeRange={timeRange} onTimeRangeChange={setTimeRange} currentUser={currentUser}>
       <div className="flex items-center gap-2 text-xs text-fg-muted mb-1">
         <span>SOC</span>
         <span aria-hidden="true">/</span>
@@ -37,6 +37,10 @@ export default function Dashboard() {
 
       {data && (
         <>
+          <section className="grid grid--live">
+            <LiveEvents events={data.recentEvents} attackTypes={data.attackTypes} onSelectEvent={setSelectedEvent} />
+          </section>
+
           <section className="grid grid--kpis" aria-label="Indicadores clave">
             {data.kpis.map((k) => <KpiCard key={k.id} {...k} />)}
           </section>
@@ -51,14 +55,10 @@ export default function Dashboard() {
             <div className="grid__span-4"><TopEndpoints data={data.topEndpoints} /></div>
             <div className="grid__span-3"><ModelHealth data={data.modelHealth} /></div>
           </section>
-
-          <section className="grid grid--live">
-            <LiveEvents events={data.recentEvents} onSelectEvent={setSelectedEvent} />
-          </section>
         </>
       )}
 
-      <EventDrawer event={selectedEvent} onClose={() => setSelectedEvent(null)} />
+      <EventDrawer event={selectedEvent} attackTypes={data?.attackTypes ?? []} onClose={() => setSelectedEvent(null)} />
     </AppShell>
   )
 }

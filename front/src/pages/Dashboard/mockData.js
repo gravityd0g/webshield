@@ -83,12 +83,12 @@ export const timeline = {
 }
 
 export const attackTypes = [
-  { id: 'sqli', label: 'SQL Injection', value: 41, color: '#f43f5e' },
-  { id: 'xss', label: 'Cross-Site Scripting', value: 23, color: '#fb7185' },
-  { id: 'traversal', label: 'Path Traversal', value: 14, color: '#fbbf24' },
-  { id: 'encoded', label: 'Payload Encoded', value: 11, color: '#a78bfa' },
-  { id: 'admin', label: 'Admin Probing', value: 8, color: '#60a5fa' },
-  { id: 'other', label: 'Otros', value: 3, color: '#8b94ad' },
+  { id: 'sqli', label: 'SQL Injection', value: 41, color: '#f43f5e', severity: 5 },
+  { id: 'xss', label: 'Cross-Site Scripting', value: 23, color: '#fb7185', severity: 4 },
+  { id: 'traversal', label: 'Path Traversal', value: 14, color: '#fbbf24', severity: 4 },
+  { id: 'encoded', label: 'Payload Encoded', value: 11, color: '#a78bfa', severity: 3 },
+  { id: 'admin', label: 'Admin Probing', value: 8, color: '#60a5fa', severity: 3 },
+  { id: 'other', label: 'Otros', value: 3, color: '#8b94ad', severity: 2 },
 ]
 
 export const topIPs = [
@@ -96,7 +96,7 @@ export const topIPs = [
   { ip: '45.155.205.211', country: 'RU', total: 198, anomalousPct: 95, firstSeen: '08:33', lastSeen: '13:42', status: 'blocked' },
   { ip: '192.168.1.47', country: '—', total: 156, anomalousPct: 67, firstSeen: '07:01', lastSeen: '13:42', status: 'watch' },
   { ip: '198.51.100.15', country: 'NL', total: 89, anomalousPct: 78, firstSeen: '09:48', lastSeen: '13:36', status: 'blocked' },
-  { ip: '172.16.10.5', country: '—', total: 64, anomalousPct: 41, firstSeen: '10:22', lastSeen: '13:30', status: 'watch' },
+  { ip: '172.16.10.5', country: '—', total: 64, anomalousPct: 41, firstSeen: '10:22', lastSeen: '13:30', status: null },
   { ip: '91.234.99.124', country: 'UA', total: 51, anomalousPct: 84, firstSeen: '11:05', lastSeen: '13:18', status: 'blocked' },
 ]
 
@@ -131,6 +131,25 @@ export const modelHealth = {
 
 // Eventos recientes — patrones tomados del dataset ECML/PKDD 2007.
 export const recentEvents = [
+  {
+    id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+    code: null,
+    ts: '13:42:18',
+    ip: '198.51.100.222',
+    method: 'GET',
+    uri: '/wp-login.php',
+    verdict: 'anomalous',
+    action: 'blocked',
+    score: 0.78,
+    attackType: 'admin',
+    rule: 'CRS-913100',
+    body: null,
+    headers: { 'Host': 'webshield.lab.tec.local', 'User-Agent': 'Mozilla/5.0 (compatible; Nikto)' },
+    features: [
+      { name: 'has_admin', value: 1, contribution: 0.29 },
+      { name: 'len_URI', value: 13, contribution: 0.08 },
+    ],
+  },
   {
     id: 'evt-9281',
     ts: '13:42:11',
@@ -347,21 +366,3 @@ export const recentEvents = [
   },
 ]
 
-export const navItems = [
-  { id: 'dashboard', label: 'Dashboard', icon: 'grid', active: true },
-  { id: 'live', label: 'Live events', icon: 'pulse', badge: 'LIVE' },
-  { id: 'alerts', label: 'Alerts', icon: 'bell', badge: 12 },
-  { id: 'triage', label: 'Triage queue', icon: 'inbox', badge: 4 },
-  { id: 'investigations', label: 'Investigations', icon: 'search' },
-  { id: 'rules', label: 'Rules & model', icon: 'shield' },
-  { id: 'users', label: 'Users', icon: 'users', adminOnly: true },
-  { id: 'audit', label: 'Audit log', icon: 'history', adminOnly: true },
-  { id: 'settings', label: 'Settings', icon: 'cog' },
-]
-
-export const currentUser = {
-  name: 'Nat Rogue',
-  email: 'natrogue28@gmail.com',
-  role: 'analyst',
-  initials: 'NR',
-}

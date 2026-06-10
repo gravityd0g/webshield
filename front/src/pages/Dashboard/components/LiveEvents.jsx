@@ -1,12 +1,7 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 
-const ATTACK_LABEL = {
-  sqli: 'SQL Injection',
-  xss: 'Cross-Site Scripting',
-  traversal: 'Path Traversal',
-  encoded: 'Encoded Payload',
-  admin: 'Admin Probing',
-  other: 'Other',
+function buildLabelMap(attackTypes) {
+  return Object.fromEntries((attackTypes ?? []).map((t) => [t.id, t.label]))
 }
 
 function ScoreCell({ score }) {
@@ -34,9 +29,10 @@ function truncate(str, max = 56) {
   return str.length <= max ? str : str.slice(0, max - 1) + '…'
 }
 
-export default function LiveEvents({ events, onSelectEvent }) {
+export default function LiveEvents({ events, attackTypes, onSelectEvent }) {
   const [paused, setPaused] = useState(false)
   const [filter, setFilter] = useState('all')
+  const labelMap = useMemo(() => buildLabelMap(attackTypes), [attackTypes])
 
   const filtered = events.filter((e) => {
     if (filter === 'all') return true
@@ -205,7 +201,7 @@ export default function LiveEvents({ events, onSelectEvent }) {
                   </span>
                 </td>
                 <td className="px-2.5 py-[9px] border-b border-border align-middle">
-                  {evt.attackType ? ATTACK_LABEL[evt.attackType] : <span className="font-mono text-xs text-fg-dim">—</span>}
+                  {evt.attackType ? (labelMap[evt.attackType] ?? evt.attackType) : <span className="font-mono text-xs text-fg-dim">—</span>}
                 </td>
                 <td className="font-mono text-xs text-fg-dim px-2.5 py-[9px] border-b border-border align-middle text-[11px]">
                   {evt.rule ?? '—'}

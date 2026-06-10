@@ -1,4 +1,4 @@
-import { navItems, currentUser } from '../mockData'
+import { navItems } from '../lib/nav'
 
 const TIME_RANGES = [
   { id: '1h', label: '1h' },
@@ -29,7 +29,7 @@ function Icon({ name }) {
   )
 }
 
-function TopBar({ timeRange, onTimeRangeChange }) {
+function TopBar({ timeRange, onTimeRangeChange, currentUser }) {
   return (
     <header
       className="grid grid-cols-[280px_1fr_auto] items-center gap-6 px-5 py-2.5 bg-gradient-to-b from-bg-2 to-bg-1 border-b border-border sticky top-0 z-30"
@@ -103,18 +103,20 @@ function TopBar({ timeRange, onTimeRangeChange }) {
             3
           </span>
         </button>
-        <div
-          className="flex items-center gap-2.5 pl-1 pr-2.5 py-1 bg-bg-2 border border-border rounded-full"
-          title={`${currentUser.name} · ${currentUser.role}`}
-        >
-          <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue to-violet grid place-items-center text-[11px] font-bold text-white">
-            {currentUser.initials}
+        {currentUser && (
+          <div
+            className="flex items-center gap-2.5 pl-1 pr-2.5 py-1 bg-bg-2 border border-border rounded-full"
+            title={`${currentUser.name} · ${currentUser.role}`}
+          >
+            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue to-violet grid place-items-center text-[11px] font-bold text-white">
+              {currentUser.initials}
+            </div>
+            <div className="flex flex-col leading-tight">
+              <strong className="text-xs">{currentUser.name}</strong>
+              <span className="text-[10px] text-fg-dim uppercase tracking-wide">{currentUser.role}</span>
+            </div>
           </div>
-          <div className="flex flex-col leading-tight">
-            <strong className="text-xs">{currentUser.name}</strong>
-            <span className="text-[10px] text-fg-dim uppercase tracking-wide">{currentUser.role}</span>
-          </div>
-        </div>
+        )}
       </div>
     </header>
   )
@@ -183,12 +185,12 @@ function Sidebar() {
   )
 }
 
-export default function AppShell({ children, timeRange, onTimeRangeChange }) {
+export default function AppShell({ children, timeRange, onTimeRangeChange, currentUser }) {
   return (
     <div
       className="min-h-screen flex flex-col text-sm leading-[1.45] text-fg font-sans bg-bg-0 bg-[radial-gradient(1200px_600px_at_20%_-10%,rgb(96_165_250/0.06),transparent_60%),radial-gradient(900px_500px_at_110%_10%,rgb(167_139_250/0.05),transparent_60%),var(--color-bg-0)] [&_*]:box-border [&_*::before]:box-border [&_*::after]:box-border [&_*:focus-visible]:outline-2 [&_*:focus-visible]:outline-blue [&_*:focus-visible]:outline-offset-2 [&_*:focus-visible]:rounded"
     >
-      <TopBar timeRange={timeRange} onTimeRangeChange={onTimeRangeChange} />
+      <TopBar timeRange={timeRange} onTimeRangeChange={onTimeRangeChange} currentUser={currentUser} />
       <div className="flex flex-1 min-h-0">
         <Sidebar />
         <main className="flex-1 px-6 pt-5 pb-8 overflow-x-hidden flex flex-col gap-4" id="main">

@@ -62,20 +62,24 @@ export default function KpiCard({ label, value, delta, deltaDirection, period, s
     >
       <header className="flex justify-between items-center">
         <span className="text-[11px] uppercase tracking-wider text-fg-dim font-semibold">{label}</span>
-        <span
-          className={
-            deltaDirection === 'up'
-              ? 'text-[11px] font-semibold font-mono text-rose'
-              : deltaDirection === 'down'
-                ? 'text-[11px] font-semibold font-mono text-green'
-                : 'text-[11px] font-semibold font-mono text-fg-muted'
-          }
-        >
-          <span aria-hidden="true">
-            {deltaDirection === 'up' ? '▲' : deltaDirection === 'down' ? '▼' : '·'}
-          </span>{' '}
-          {delta}
-        </span>
+        {delta == null ? (
+          <span className="text-[11px] font-semibold font-mono text-fg-muted">—</span>
+        ) : (
+          <span
+            className={
+              deltaDirection === 'up'
+                ? 'text-[11px] font-semibold font-mono text-rose'
+                : deltaDirection === 'down'
+                  ? 'text-[11px] font-semibold font-mono text-green'
+                  : 'text-[11px] font-semibold font-mono text-fg-muted'
+            }
+          >
+            <span aria-hidden="true">
+              {deltaDirection === 'up' ? '▲' : deltaDirection === 'down' ? '▼' : '·'}
+            </span>{' '}
+            {delta}
+          </span>
+        )}
       </header>
       <div className="text-[28px] font-bold text-fg tracking-tight font-mono leading-tight">{value}</div>
       <footer className="flex justify-between items-center mt-auto">
