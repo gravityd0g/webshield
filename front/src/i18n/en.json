@@ -1,0 +1,259 @@
+{
+  "common": {
+    "loading": "Loading…",
+    "retry": "Retry",
+    "comingSoon": "Coming soon",
+    "viewAll": "View all",
+    "cancel": "Cancel",
+    "save": "Save"
+  },
+  "auth": {
+    "login": {
+      "title": "Sign in",
+      "subtitle": "Enter your credentials to continue",
+      "emailLabel": "Email",
+      "emailPlaceholder": "admin@webshield.io",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "••••••••",
+      "forgotPassword": "Forgot your password?",
+      "submit": "Sign in",
+      "submitting": "Verifying…",
+      "errorMissingFields": "Please fill in all fields.",
+      "registerPrompt": "Don't have an account?",
+      "registerLink": "Create new account",
+      "footer": "webshield v0.1.0 · internal use",
+      "togglePasswordShow": "Show password",
+      "togglePasswordHide": "Hide password"
+    },
+    "register": {
+      "title": "Create account",
+      "subtitle": "Fill in the form to register",
+      "nameLabel": "Full name",
+      "namePlaceholder": "Your name",
+      "emailLabel": "Email",
+      "emailPlaceholder": "you@email.com",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "Min. 8 characters",
+      "confirmLabel": "Confirm password",
+      "confirmPlaceholder": "Repeat your password",
+      "submit": "Create account",
+      "submitting": "Creating account…",
+      "errorMissingFields": "Please fill in all fields.",
+      "errorMismatch": "Passwords do not match.",
+      "errorTooShort": "Password must be at least 8 characters.",
+      "loginPrompt": "Already have an account?",
+      "loginLink": "Sign in"
+    }
+  },
+  "topbar": {
+    "brandTagline": "AI request inspection",
+    "status": "WebShield online",
+    "statusTitle": "WebShield active",
+    "searchPlaceholder": "Search IP, URI, event, rule…",
+    "searchAriaLabel": "Global search",
+    "notificationsAriaLabel": "Notifications ({{count}} new)",
+    "themeToLight": "Switch to light mode",
+    "themeToDark": "Switch to dark mode",
+    "themeTitleLight": "Light mode",
+    "themeTitleDark": "Dark mode",
+    "languageAriaLabel": "Change language"
+  },
+  "nav": {
+    "ariaLabel": "Main navigation",
+    "dashboard": "Dashboard",
+    "live": "Live events",
+    "alerts": "Alerts",
+    "triage": "Triage queue",
+    "investigations": "Investigations",
+    "rules": "Rules & model",
+    "users": "Users",
+    "audit": "Audit log",
+    "settings": "Settings",
+    "adminOnly": "Admin only",
+    "liveBadge": "LIVE",
+    "health": {
+      "model": "Model",
+      "database": "Database",
+      "backend": "Backend",
+      "healthy": "healthy"
+    },
+    "version": "webshield v0.1.0 · build #sketch"
+  },
+  "breadcrumb": {
+    "overview": "Overview",
+    "loading": "Loading…",
+    "liveData": "Live data"
+  },
+  "dashboard": {
+    "errorTitle": "Could not connect to the database.",
+    "errorDetail": "Make sure the database is running and the API is on port 3001."
+  },
+  "kpi": {
+    "totalRequests": "Total requests",
+    "blocked": "Blocked",
+    "blockRate": "Block rate",
+    "topAttackType": "Top attack type",
+    "latency": "Latency",
+    "uniqueAttackers": "Unique attackers",
+    "period": {
+      "vsYesterday": "vs yesterday",
+      "h24": "24h",
+      "rollingAvg": "rolling avg"
+    }
+  },
+  "chart": {
+    "trafficTitle": "Traffic · 24h",
+    "trafficSubtitle": "Requests per hour, valid vs anomalous (inspector classification).",
+    "legendValid": "Valid",
+    "legendAnomalous": "Anomalous",
+    "attackTitle": "Attack distribution",
+    "attackSubtitle": "% of blocks by category · 24h",
+    "attackEmpty": "No blocks in the last 24h"
+  },
+  "table": {
+    "topIps": {
+      "title": "Top attacker IPs",
+      "subtitle": "IPs with highest anomalous volume · 24h",
+      "empty": "No IPs registered in the last 24h",
+      "ip": "IP",
+      "country": "Country",
+      "total": "Total",
+      "anomalousPct": "% anom",
+      "lastSeen": "Last",
+      "status": "Status",
+      "blocked": "BLOCKED",
+      "watchlist": "WATCHLIST",
+      "allowed": "ALLOWED"
+    },
+    "topEndpoints": {
+      "title": "Most targeted endpoints",
+      "subtitle": "URIs by number of anomalous requests · 24h",
+      "empty": "No data in the last 24h"
+    }
+  },
+  "modelHealth": {
+    "title": "Model health",
+    "subtitle": "Random Forest + OWASP CRS rules",
+    "predictionsPerSecond": "Predictions/sec",
+    "rollingAccuracy": "Accuracy (60 min)",
+    "drift": "Drift score",
+    "lowerIsBetter": "lower is better",
+    "histogramTitle": "Confidence distribution",
+    "histogramValid": "valid",
+    "histogramUncertain": "uncertain",
+    "histogramAnomalous": "anomalous",
+    "statusHealthy": "HEALTHY",
+    "statusDegraded": "DEGRADED",
+    "statusCritical": "CRITICAL"
+  },
+  "live": {
+    "title": "Live events",
+    "subtitle": "Stream of inspected requests — click to inspect",
+    "filtersAriaLabel": "Stream filters",
+    "filterAll": "All",
+    "filterAnomalous": "Anomalous",
+    "filterBlocked": "Blocked",
+    "pause": "⏸ Pause",
+    "resume": "▶ Resume",
+    "pausedOverlay": "Stream paused · new events queued",
+    "live": "live",
+    "paused": "paused",
+    "col": {
+      "time": "Time",
+      "ip": "IP",
+      "method": "Method",
+      "uri": "URI",
+      "verdict": "Verdict",
+      "score": "Score",
+      "action": "Action",
+      "type": "Type",
+      "rule": "Rule"
+    },
+    "verdict": {
+      "valid": "Valid",
+      "anomalous": "Anomalous"
+    },
+    "action": {
+      "blocked": "BLOCKED",
+      "allowed": "ALLOWED",
+      "flagged": "FLAGGED"
+    }
+  },
+  "drawer": {
+    "tabRequest": "Request",
+    "tabModel": "Model",
+    "tabTriage": "Triage",
+    "event": "Event",
+    "close": "Close",
+    "summary": "Summary",
+    "timestamp": "Timestamp",
+    "sourceIp": "Source IP",
+    "method": "Method",
+    "uri": "URI",
+    "headers": "Headers",
+    "body": "Body",
+    "score": "score",
+    "validIntro": "Request classified as <strong>valid</strong> (score {{score}}).",
+    "validDetail": "No rule or ML model was triggered.",
+    "decision": "Decision",
+    "decisionRules": "Deterministic rules",
+    "decisionRuleTriggered": "Rule triggered:",
+    "decisionMl": "ML model",
+    "decisionScoreLine": "Score: {{score}} · class: <strong>anomalous</strong>",
+    "decisionAction": "Action",
+    "attackType": "Inferred attack type",
+    "severityTitle": "Attack type severity (1-5)",
+    "severityShort": "SEV {{value}}/5",
+    "featuresTitle": "Feature contribution (top 5)",
+    "featuresHelp": "Each feature's contribution to the final score. Helps the analyst understand why the model classified the request as anomalous.",
+    "triage": {
+      "markEvent": "Mark event",
+      "tp": "True Positive",
+      "tpHelp": "Confirm real attack",
+      "fp": "False Positive",
+      "fpHelp": "Was legitimate traffic",
+      "escalate": "Escalate",
+      "escalateHelp": "Requires admin review",
+      "severity": "Severity ({{value}}/5)",
+      "comment": "Comment",
+      "commentPlaceholder": "Notes for the team (kept in audit log)…",
+      "viewIpEvents": "View events from {{ip}}",
+      "save": "Save triage"
+    }
+  },
+  "placeholder": {
+    "comingSoon": "Coming soon",
+    "live": {
+      "title": "Live events",
+      "description": "Full stream of inspected requests in real time. Filtered by verdict, action, IP and attack type, with a per-event detail drawer."
+    },
+    "alerts": {
+      "title": "Alerts",
+      "description": "Actionable alerts derived from critical events: confirmed SQLi, recurring attacker IP, anomalous traffic spikes. Notifications, acknowledgments and incident grouping."
+    },
+    "triage": {
+      "title": "Triage queue",
+      "description": "Queue of events pending review: the analyst marks True Positive / False Positive / Escalated, assigns severity and leaves notes that feed back into the model."
+    },
+    "investigations": {
+      "title": "Investigations",
+      "description": "Forensic cases: grouping of related events, reconstructed timeline, artifacts (IPs, payloads, user agents) and evidence export."
+    },
+    "rules": {
+      "title": "Rules & model",
+      "description": "OWASP CRS rule configuration and ML model management: versions, metrics, retraining, deployment and rollback."
+    },
+    "users": {
+      "title": "Users",
+      "description": "User administration: roles (analyst, admin), per-section permissions, invitations, MFA and password policies."
+    },
+    "audit": {
+      "title": "Audit log",
+      "description": "Immutable record of user actions and configuration changes. Search by actor, resource, date and export for compliance."
+    },
+    "settings": {
+      "title": "Settings",
+      "description": "General WebShield configuration: email/Slack notifications, integrations, branding, data retention and backups."
+    }
+  }
+}

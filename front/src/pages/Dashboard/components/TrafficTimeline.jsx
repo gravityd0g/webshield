@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next'
+
 const W = 720
 const H = 260
 const PAD = { t: 16, r: 16, b: 32, l: 44 }
@@ -14,6 +16,7 @@ function buildArea(values, scaleX, scaleY, baseline) {
 }
 
 export default function TrafficTimeline({ data }) {
+  const { t } = useTranslation()
   const buckets = data.buckets
   const n = buckets.length
   const valid = buckets.map((b) => b.valid)
@@ -44,24 +47,24 @@ export default function TrafficTimeline({ data }) {
       <header className="flex items-start justify-between gap-4">
         <div>
           <h2 id="timeline-title" className="m-0 text-sm font-semibold tracking-wide text-fg flex items-center gap-2.5">
-            Tráfico en 24h
+            {t('chart.trafficTitle')}
           </h2>
           <p className="mt-0.5 mb-0 text-[11px] text-fg-dim">
-            Requests por hora, válidos vs anómalos (clasificación del WAF).
+            {t('chart.trafficSubtitle')}
           </p>
         </div>
         <div className="flex gap-3.5 text-[11px] text-fg-muted">
           <span className="flex items-center gap-1.5">
             <i className="inline-block w-2.5 h-2.5 rounded-sm bg-cyan" />
-            Válido
+            {t('chart.legendValid')}
           </span>
           <span className="flex items-center gap-1.5">
             <i className="inline-block w-2.5 h-2.5 rounded-sm bg-rose" />
-            Anómalo
+            {t('chart.legendAnomalous')}
           </span>
         </div>
       </header>
-      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Gráfica de tráfico apilada">
+      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={t('chart.trafficTitle')}>
         {tickValues.map((tv, i) => {
           const y = scaleY(tv)
           return (

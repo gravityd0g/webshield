@@ -1,10 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-
-const TABS = [
-  { id: 'request', label: 'Request' },
-  { id: 'model', label: 'Modelo' },
-  { id: 'triage', label: 'Triage' },
-]
+import { useTranslation, Trans } from 'react-i18next'
 
 function buildAttackInfo(attackTypes) {
   return Object.fromEntries((attackTypes ?? []).map((t) => [t.id, { label: t.label, severity: t.severity }]))
@@ -24,44 +19,41 @@ const SEVERITY_CLASS = {
   5: 'bg-rose-soft text-rose',
 }
 
+function methodBadgeClass(method) {
+  const m = method.toLowerCase()
+  if (m === 'get') return 'inline-block font-mono text-[10px] font-bold px-1.5 py-0.5 rounded-sm tracking-wide bg-blue-soft text-blue'
+  if (m === 'post') return 'inline-block font-mono text-[10px] font-bold px-1.5 py-0.5 rounded-sm tracking-wide bg-violet-soft text-violet'
+  if (m === 'put') return 'inline-block font-mono text-[10px] font-bold px-1.5 py-0.5 rounded-sm tracking-wide bg-amber-soft text-amber'
+  return 'inline-block font-mono text-[10px] font-bold px-1.5 py-0.5 rounded-sm tracking-wide bg-rose-soft text-rose'
+}
+
 function RequestTab({ event }) {
+  const { t } = useTranslation()
   return (
     <>
       <div className="mb-[22px]">
-        <h3 className="m-0 mb-2.5 text-[11px] tracking-wider uppercase text-fg-dim font-semibold">Resumen</h3>
+        <h3 className="m-0 mb-2.5 text-[11px] tracking-wider uppercase text-fg-dim font-semibold">{t('drawer.summary')}</h3>
         <dl className="m-0 flex flex-col gap-1">
           <div className="flex justify-between items-baseline py-1.5 border-b border-dashed border-border text-xs last:border-b-0">
-            <dt className="text-fg-muted">Evento</dt>
+            <dt className="text-fg-muted">{t('drawer.event')}</dt>
             <dd className="font-mono text-xs m-0 text-fg" title={event.id}>{formatEventCode(event)}</dd>
           </div>
           <div className="flex justify-between items-baseline py-1.5 border-b border-dashed border-border text-xs last:border-b-0">
-            <dt className="text-fg-muted">Timestamp</dt>
+            <dt className="text-fg-muted">{t('drawer.timestamp')}</dt>
             <dd className="font-mono text-xs m-0 text-fg">{event.ts}</dd>
           </div>
           <div className="flex justify-between items-baseline py-1.5 border-b border-dashed border-border text-xs last:border-b-0">
-            <dt className="text-fg-muted">IP origen</dt>
+            <dt className="text-fg-muted">{t('drawer.sourceIp')}</dt>
             <dd className="font-mono text-xs m-0 text-fg">{event.ip}</dd>
           </div>
           <div className="flex justify-between items-baseline py-1.5 border-b border-dashed border-border text-xs last:border-b-0">
-            <dt className="text-fg-muted">Método</dt>
+            <dt className="text-fg-muted">{t('drawer.method')}</dt>
             <dd className="m-0">
-              <span
-                className={
-                  event.method.toLowerCase() === 'get'
-                    ? 'inline-block font-mono text-[10px] font-bold px-1.5 py-0.5 rounded-sm tracking-wide bg-blue-soft text-blue'
-                    : event.method.toLowerCase() === 'post'
-                      ? 'inline-block font-mono text-[10px] font-bold px-1.5 py-0.5 rounded-sm tracking-wide bg-violet-soft text-violet'
-                      : event.method.toLowerCase() === 'put'
-                        ? 'inline-block font-mono text-[10px] font-bold px-1.5 py-0.5 rounded-sm tracking-wide bg-amber-soft text-amber'
-                        : 'inline-block font-mono text-[10px] font-bold px-1.5 py-0.5 rounded-sm tracking-wide bg-rose-soft text-rose'
-                }
-              >
-                {event.method}
-              </span>
+              <span className={methodBadgeClass(event.method)}>{event.method}</span>
             </dd>
           </div>
           <div className="flex justify-between items-baseline py-1.5 border-b border-dashed border-border text-xs last:border-b-0">
-            <dt className="text-fg-muted">URI</dt>
+            <dt className="text-fg-muted">{t('drawer.uri')}</dt>
             <dd className="m-0 text-fg">
               <code>{event.uri}</code>
             </dd>
@@ -69,14 +61,14 @@ function RequestTab({ event }) {
         </dl>
       </div>
       <div className="mb-[22px]">
-        <h3 className="m-0 mb-2.5 text-[11px] tracking-wider uppercase text-fg-dim font-semibold">Headers</h3>
+        <h3 className="m-0 mb-2.5 text-[11px] tracking-wider uppercase text-fg-dim font-semibold">{t('drawer.headers')}</h3>
         <pre className="bg-bg-3 border border-border rounded-md px-3 py-2.5 font-mono text-[11px] text-fg whitespace-pre-wrap break-all m-0 leading-normal max-h-[180px] overflow-y-auto">
           {Object.entries(event.headers).map(([k, v]) => `${k}: ${v}`).join('\n')}
         </pre>
       </div>
       {event.body && (
         <div className="mb-[22px]">
-          <h3 className="m-0 mb-2.5 text-[11px] tracking-wider uppercase text-fg-dim font-semibold">Body</h3>
+          <h3 className="m-0 mb-2.5 text-[11px] tracking-wider uppercase text-fg-dim font-semibold">{t('drawer.body')}</h3>
           <pre className="bg-rose-soft border border-rose rounded-md px-3 py-2.5 font-mono text-[11px] text-rose whitespace-pre-wrap break-all m-0 leading-normal max-h-[180px] overflow-y-auto">
             {event.body}
           </pre>
@@ -87,14 +79,19 @@ function RequestTab({ event }) {
 }
 
 function ModelTab({ event, attackInfo }) {
+  const { t } = useTranslation()
   if (event.verdict === 'valid') {
     return (
       <div className="py-9 px-4 text-center text-fg-muted">
         <p>
-          Request clasificado como <strong>válido</strong> (score {event.score.toFixed(2)}).
+          <Trans
+            i18nKey="drawer.validIntro"
+            values={{ score: event.score.toFixed(2) }}
+            components={{ strong: <strong /> }}
+          />
         </p>
         <p className="text-[11px] text-fg-dim mt-1.5">
-          No se activó ninguna regla del CRS ni del modelo ML.
+          {t('drawer.validDetail')}
         </p>
       </div>
     )
@@ -105,16 +102,16 @@ function ModelTab({ event, attackInfo }) {
   return (
     <>
       <div className="mb-[22px]">
-        <h3 className="m-0 mb-2.5 text-[11px] tracking-wider uppercase text-fg-dim font-semibold">Decisión</h3>
+        <h3 className="m-0 mb-2.5 text-[11px] tracking-wider uppercase text-fg-dim font-semibold">{t('drawer.decision')}</h3>
         <div className="flex items-stretch gap-2">
           <div className="flex-1 p-2.5 px-3 bg-bg-3 rounded-lg border border-amber flex gap-2 text-[11px]">
             <span className="bg-bg-1 w-[18px] h-[18px] grid place-items-center rounded-full text-[10px] font-bold text-fg-dim shrink-0">
               1
             </span>
             <div>
-              <strong className="block text-fg text-xs">Reglas determinísticas</strong>
+              <strong className="block text-fg text-xs">{t('drawer.decisionRules')}</strong>
               <p className="mt-1 mb-0 text-fg-muted font-mono text-[10px]">
-                Regla disparada: <code className="bg-bg-1 px-[5px] py-px rounded-sm">{event.rule}</code>
+                {t('drawer.decisionRuleTriggered')} <code className="bg-bg-1 px-[5px] py-px rounded-sm">{event.rule}</code>
               </p>
             </div>
           </div>
@@ -124,9 +121,13 @@ function ModelTab({ event, attackInfo }) {
               2
             </span>
             <div>
-              <strong className="block text-fg text-xs">Modelo ML</strong>
+              <strong className="block text-fg text-xs">{t('drawer.decisionMl')}</strong>
               <p className="mt-1 mb-0 text-fg-muted font-mono text-[10px]">
-                Score: <span className="font-mono text-xs">{event.score.toFixed(2)}</span> · clase: <strong>anomalous</strong>
+                <Trans
+                  i18nKey="drawer.decisionScoreLine"
+                  values={{ score: event.score.toFixed(2) }}
+                  components={{ strong: <strong /> }}
+                />
               </p>
             </div>
           </div>
@@ -136,7 +137,7 @@ function ModelTab({ event, attackInfo }) {
               3
             </span>
             <div>
-              <strong className="block text-fg text-xs">Acción</strong>
+              <strong className="block text-fg text-xs">{t('drawer.decisionAction')}</strong>
               <p className="mt-1 mb-0 text-rose font-mono text-[10px]">{event.action.toUpperCase()}</p>
             </div>
           </div>
@@ -144,26 +145,26 @@ function ModelTab({ event, attackInfo }) {
       </div>
       <div className="mb-[22px]">
         <h3 className="m-0 mb-2.5 text-[11px] tracking-wider uppercase text-fg-dim font-semibold">
-          Tipo de ataque inferido
+          {t('drawer.attackType')}
         </h3>
         <div className="flex items-center gap-2.5">
           <p className="m-0 text-sm font-semibold text-rose">{info?.label ?? event.attackType ?? '—'}</p>
           {info?.severity != null && (
             <span
               className={`inline-block text-[10px] font-bold px-[7px] py-[3px] rounded font-mono tracking-wide ${SEVERITY_CLASS[info.severity] ?? 'bg-bg-3 text-fg-muted'}`}
-              title="Severidad del tipo de ataque (1-5)"
+              title={t('drawer.severityTitle')}
             >
-              SEV {info.severity}/5
+              {t('drawer.severityShort', { value: info.severity })}
             </span>
           )}
         </div>
       </div>
       <div className="mb-[22px]">
         <h3 className="m-0 mb-2.5 text-[11px] tracking-wider uppercase text-fg-dim font-semibold">
-          Contribución de features (top 5)
+          {t('drawer.featuresTitle')}
         </h3>
         <p className="mt-0.5 mb-0 text-[11px] text-fg-dim">
-          Aporte de cada feature al score final. Ayuda al analista a entender por qué el modelo clasificó como anómalo.
+          {t('drawer.featuresHelp')}
         </p>
         <ul className="list-none m-0 p-0 flex flex-col gap-2">
           {sortedFeatures.map((f) => (
@@ -187,13 +188,14 @@ function ModelTab({ event, attackInfo }) {
 }
 
 function TriageTab({ event }) {
+  const { t } = useTranslation()
   const [verdict, setVerdict] = useState(null)
   const [severity, setSeverity] = useState(3)
   const [comment, setComment] = useState('')
 
   return (
     <form className="mb-[22px] flex flex-col gap-3" onSubmit={(e) => e.preventDefault()}>
-      <h3 className="m-0 mb-2.5 text-[11px] tracking-wider uppercase text-fg-dim font-semibold">Marcar evento</h3>
+      <h3 className="m-0 mb-2.5 text-[11px] tracking-wider uppercase text-fg-dim font-semibold">{t('drawer.triage.markEvent')}</h3>
       <div className="grid grid-cols-3 gap-2">
         <button
           type="button"
@@ -204,8 +206,8 @@ function TriageTab({ event }) {
           }
           onClick={() => setVerdict('tp')}
         >
-          <strong>True Positive</strong>
-          <span className="text-fg-muted text-[10px] font-normal">Confirmar ataque real</span>
+          <strong>{t('drawer.triage.tp')}</strong>
+          <span className="text-fg-muted text-[10px] font-normal">{t('drawer.triage.tpHelp')}</span>
         </button>
         <button
           type="button"
@@ -216,8 +218,8 @@ function TriageTab({ event }) {
           }
           onClick={() => setVerdict('fp')}
         >
-          <strong>False Positive</strong>
-          <span className="text-fg-muted text-[10px] font-normal">Era tráfico legítimo</span>
+          <strong>{t('drawer.triage.fp')}</strong>
+          <span className="text-fg-muted text-[10px] font-normal">{t('drawer.triage.fpHelp')}</span>
         </button>
         <button
           type="button"
@@ -228,13 +230,13 @@ function TriageTab({ event }) {
           }
           onClick={() => setVerdict('esc')}
         >
-          <strong>Escalar</strong>
-          <span className="text-fg-muted text-[10px] font-normal">Requiere revisión admin</span>
+          <strong>{t('drawer.triage.escalate')}</strong>
+          <span className="text-fg-muted text-[10px] font-normal">{t('drawer.triage.escalateHelp')}</span>
         </button>
       </div>
 
       <label className="flex flex-col gap-1.5 text-[11px] text-fg-muted">
-        <span>Severidad ({severity}/5)</span>
+        <span>{t('drawer.triage.severity', { value: severity })}</span>
         <input
           type="range"
           min="1"
@@ -246,10 +248,10 @@ function TriageTab({ event }) {
       </label>
 
       <label className="flex flex-col gap-1.5 text-[11px] text-fg-muted">
-        <span>Comentario</span>
+        <span>{t('drawer.triage.comment')}</span>
         <textarea
           rows={3}
-          placeholder="Notas para el equipo (queda en el audit log)…"
+          placeholder={t('drawer.triage.commentPlaceholder')}
           value={comment}
           onChange={(e) => setComment(e.target.value)}
           className="bg-bg-3 border border-border rounded-md px-2.5 py-2 text-fg font-[inherit] text-xs resize-y outline-0 focus:border-blue"
@@ -261,14 +263,14 @@ function TriageTab({ event }) {
           type="button"
           className="bg-transparent border border-border text-fg-muted px-3.5 py-2 rounded-[7px] text-xs font-semibold cursor-pointer hover:text-fg"
         >
-          Ver eventos de {event.ip}
+          {t('drawer.triage.viewIpEvents', { ip: event.ip })}
         </button>
         <button
           type="submit"
           className="bg-blue text-bg-0 border border-blue px-3.5 py-2 rounded-[7px] text-xs font-semibold cursor-pointer hover:brightness-110 disabled:bg-bg-3 disabled:text-fg-dim disabled:border-border disabled:cursor-not-allowed"
           disabled={!verdict}
         >
-          Guardar triage
+          {t('drawer.triage.save')}
         </button>
       </div>
     </form>
@@ -276,6 +278,7 @@ function TriageTab({ event }) {
 }
 
 export default function EventDrawer({ event, attackTypes, onClose }) {
+  const { t } = useTranslation()
   const [tab, setTab] = useState('request')
   const attackInfo = useMemo(() => buildAttackInfo(attackTypes), [attackTypes])
 
@@ -293,6 +296,12 @@ export default function EventDrawer({ event, attackTypes, onClose }) {
 
   if (!event) return null
 
+  const TABS = [
+    { id: 'request', label: t('drawer.tabRequest') },
+    { id: 'model', label: t('drawer.tabModel') },
+    { id: 'triage', label: t('drawer.tabTriage') },
+  ]
+
   return (
     <>
       <div
@@ -309,54 +318,42 @@ export default function EventDrawer({ event, attackTypes, onClose }) {
         <header className="p-5 border-b border-border flex justify-between gap-4">
           <div>
             <p className="m-0 mb-1 text-[10px] tracking-wider uppercase text-fg-dim font-mono" title={event.id}>
-              Evento {formatEventCode(event)}
+              {t('drawer.event')} {formatEventCode(event)}
             </p>
             <h2 id="drawer-title" className="m-0 text-sm font-semibold flex items-center gap-2.5 flex-wrap">
-              <span
-                className={
-                  event.method.toLowerCase() === 'get'
-                    ? 'inline-block font-mono text-[10px] font-bold px-1.5 py-0.5 rounded-sm tracking-wide bg-blue-soft text-blue'
-                    : event.method.toLowerCase() === 'post'
-                      ? 'inline-block font-mono text-[10px] font-bold px-1.5 py-0.5 rounded-sm tracking-wide bg-violet-soft text-violet'
-                      : event.method.toLowerCase() === 'put'
-                        ? 'inline-block font-mono text-[10px] font-bold px-1.5 py-0.5 rounded-sm tracking-wide bg-amber-soft text-amber'
-                        : 'inline-block font-mono text-[10px] font-bold px-1.5 py-0.5 rounded-sm tracking-wide bg-rose-soft text-rose'
-                }
-              >
-                {event.method}
-              </span>
+              <span className={methodBadgeClass(event.method)}>{event.method}</span>
               <code className="font-mono bg-bg-3 px-1.5 py-[3px] rounded text-xs break-all">{event.uri}</code>
             </h2>
             <p className="mt-2 mb-0 text-[11px] text-fg-muted">
               <span className="font-mono text-xs">{event.ip}</span> · <span>{event.ts}</span> ·{' '}
-              <span>score {event.score.toFixed(2)}</span>
+              <span>{t('drawer.score')} {event.score.toFixed(2)}</span>
             </p>
           </div>
           <button
             type="button"
             className="bg-transparent border border-border text-fg-muted w-8 h-8 rounded-lg text-lg cursor-pointer shrink-0 hover:text-fg hover:bg-bg-3"
             onClick={onClose}
-            aria-label="Cerrar"
+            aria-label={t('drawer.close')}
           >
             ×
           </button>
         </header>
 
         <nav className="flex px-5 gap-1 border-b border-border bg-bg-1" role="tablist">
-          {TABS.map((t) => (
+          {TABS.map((tabDef) => (
             <button
-              key={t.id}
+              key={tabDef.id}
               type="button"
               role="tab"
-              aria-selected={tab === t.id}
+              aria-selected={tab === tabDef.id}
               className={
-                tab === t.id
+                tab === tabDef.id
                   ? 'relative bg-transparent border-0 px-3.5 py-3 text-xs font-semibold cursor-pointer tracking-wide text-fg after:content-[""] after:absolute after:-bottom-px after:left-3.5 after:right-3.5 after:h-0.5 after:bg-blue after:rounded-sm'
                   : 'relative bg-transparent border-0 px-3.5 py-3 text-xs font-semibold cursor-pointer tracking-wide text-fg-muted hover:text-fg'
               }
-              onClick={() => setTab(t.id)}
+              onClick={() => setTab(tabDef.id)}
             >
-              {t.label}
+              {tabDef.label}
             </button>
           ))}
         </nav>

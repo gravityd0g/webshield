@@ -1,12 +1,16 @@
-export default function PagePlaceholder({ title, description }) {
+import { useTranslation } from 'react-i18next'
+
+export default function PagePlaceholder({ tKey }) {
+  const { t } = useTranslation()
+  const title = t(`${tKey}.title`)
+  const description = t(`${tKey}.description`)
+
   return (
     <>
       <div className="flex items-center gap-2 text-xs text-fg-muted mb-1">
-        <span>SOC</span>
-        <span aria-hidden="true">/</span>
         <span>{title}</span>
         <span className="ml-auto font-mono text-[10px] px-2 py-1 rounded-full tracking-wider uppercase bg-amber-soft text-amber">
-          Próximamente
+          {t('placeholder.comingSoon')}
         </span>
       </div>
 

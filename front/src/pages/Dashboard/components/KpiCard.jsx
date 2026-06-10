@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next'
+
 function Sparkline({ points, accent }) {
   if (!points || points.length < 2) return null
   if (points.every((p) => p === 0)) return null
@@ -44,7 +46,13 @@ function Sparkline({ points, accent }) {
   )
 }
 
-export default function KpiCard({ label, value, delta, deltaDirection, period, sparkline, accent }) {
+// El backend hoy devuelve { label, period } como strings ya formateados;
+// el mock devuelve { labelKey, periodKey } para i18n. Soportamos ambos
+// hasta que el backend devuelva keys directamente.
+export default function KpiCard({ labelKey, label, value, delta, deltaDirection, periodKey, period, sparkline, accent }) {
+  const { t } = useTranslation()
+  const labelText = labelKey ? t(labelKey) : (label ?? '')
+  const periodText = periodKey ? t(periodKey) : (period ?? '')
   return (
     <article
       className={
@@ -61,7 +69,7 @@ export default function KpiCard({ label, value, delta, deltaDirection, period, s
       tabIndex={0}
     >
       <header className="flex justify-between items-center">
-        <span className="text-[11px] uppercase tracking-wider text-fg-dim font-semibold">{label}</span>
+        <span className="text-[11px] uppercase tracking-wider text-fg-dim font-semibold">{labelText}</span>
         {delta == null ? (
           <span className="text-[11px] font-semibold font-mono text-fg-muted">—</span>
         ) : (
@@ -84,7 +92,7 @@ export default function KpiCard({ label, value, delta, deltaDirection, period, s
       <div className="text-[28px] font-bold text-fg tracking-tight font-mono leading-tight">{value}</div>
       <footer className="flex justify-between items-center mt-auto">
         <Sparkline points={sparkline} accent={accent} />
-        <span className="text-[10px] text-fg-dim uppercase tracking-wide">{period}</span>
+        <span className="text-[10px] text-fg-dim uppercase tracking-wide">{periodText}</span>
       </footer>
     </article>
   )

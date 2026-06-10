@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 function buildLabelMap(attackTypes) {
   return Object.fromEntries((attackTypes ?? []).map((t) => [t.id, t.label]))
@@ -30,6 +31,7 @@ function truncate(str, max = 56) {
 }
 
 export default function LiveEvents({ events, attackTypes, onSelectEvent }) {
+  const { t } = useTranslation()
   const [paused, setPaused] = useState(false)
   const [filter, setFilter] = useState('all')
   const labelMap = useMemo(() => buildLabelMap(attackTypes), [attackTypes])
@@ -41,6 +43,12 @@ export default function LiveEvents({ events, attackTypes, onSelectEvent }) {
     return true
   })
 
+  const filters = [
+    { id: 'all', label: t('live.filterAll') },
+    { id: 'anomalous', label: t('live.filterAnomalous') },
+    { id: 'blocked', label: t('live.filterBlocked') },
+  ]
+
   return (
     <section
       className="bg-gradient-to-b from-bg-2 to-bg-1 border border-border rounded-[14px] px-[18px] pt-[18px] pb-4 shadow-panel flex flex-col gap-3.5 min-w-0 col-span-12"
@@ -49,27 +57,23 @@ export default function LiveEvents({ events, attackTypes, onSelectEvent }) {
       <header className="flex items-start justify-between gap-4">
         <div>
           <h2 id="live-events-title" className="m-0 text-sm font-semibold tracking-wide text-fg flex items-center gap-2.5">
-            Live events
+            {t('live.title')}
             <span
               className={
                 paused
                   ? 'w-2 h-2 rounded-full bg-amber shadow-[0_0_0_3px_var(--color-amber-soft)] motion-reduce:animate-none'
                   : 'w-2 h-2 rounded-full bg-rose animate-pulse-rose motion-reduce:animate-none'
               }
-              aria-label={paused ? 'pausado' : 'en vivo'}
+              aria-label={paused ? t('live.paused') : t('live.live')}
             />
           </h2>
           <p className="mt-0.5 mb-0 text-[11px] text-fg-dim">
-            Stream de requests clasificados por el WAF — click para inspeccionar
+            {t('live.subtitle')}
           </p>
         </div>
         <div className="flex gap-2 items-center">
-          <div className="flex bg-bg-3 border border-border rounded-[7px] p-0.5" role="group" aria-label="Filtros del stream">
-            {[
-              { id: 'all', label: 'Todos' },
-              { id: 'anomalous', label: 'Anómalos' },
-              { id: 'blocked', label: 'Bloqueados' },
-            ].map((f) => (
+          <div className="flex bg-bg-3 border border-border rounded-[7px] p-0.5" role="group" aria-label={t('live.filtersAriaLabel')}>
+            {filters.map((f) => (
               <button
                 key={f.id}
                 type="button"
@@ -93,7 +97,7 @@ export default function LiveEvents({ events, attackTypes, onSelectEvent }) {
             }
             onClick={() => setPaused((p) => !p)}
           >
-            {paused ? '▶ Reanudar' : '⏸ Pausar'}
+            {paused ? t('live.resume') : t('live.pause')}
           </button>
         </div>
       </header>
@@ -103,31 +107,31 @@ export default function LiveEvents({ events, attackTypes, onSelectEvent }) {
           <thead>
             <tr>
               <th scope="col" className="text-left px-2.5 py-[9px] font-semibold text-[10px] uppercase tracking-wider text-fg-dim border-b border-border bg-bg-2 sticky top-0 z-[1]">
-                Tiempo
+                {t('live.col.time')}
               </th>
               <th scope="col" className="text-left px-2.5 py-[9px] font-semibold text-[10px] uppercase tracking-wider text-fg-dim border-b border-border bg-bg-2 sticky top-0 z-[1]">
-                IP
+                {t('live.col.ip')}
               </th>
               <th scope="col" className="text-left px-2.5 py-[9px] font-semibold text-[10px] uppercase tracking-wider text-fg-dim border-b border-border bg-bg-2 sticky top-0 z-[1]">
-                Método
+                {t('live.col.method')}
               </th>
               <th scope="col" className="text-left px-2.5 py-[9px] font-semibold text-[10px] uppercase tracking-wider text-fg-dim border-b border-border bg-bg-2 sticky top-0 z-[1]">
-                URI
+                {t('live.col.uri')}
               </th>
               <th scope="col" className="text-left px-2.5 py-[9px] font-semibold text-[10px] uppercase tracking-wider text-fg-dim border-b border-border bg-bg-2 sticky top-0 z-[1]">
-                Verdict
+                {t('live.col.verdict')}
               </th>
               <th scope="col" className="text-left px-2.5 py-[9px] font-semibold text-[10px] uppercase tracking-wider text-fg-dim border-b border-border bg-bg-2 sticky top-0 z-[1]">
-                Score
+                {t('live.col.score')}
               </th>
               <th scope="col" className="text-left px-2.5 py-[9px] font-semibold text-[10px] uppercase tracking-wider text-fg-dim border-b border-border bg-bg-2 sticky top-0 z-[1]">
-                Acción
+                {t('live.col.action')}
               </th>
               <th scope="col" className="text-left px-2.5 py-[9px] font-semibold text-[10px] uppercase tracking-wider text-fg-dim border-b border-border bg-bg-2 sticky top-0 z-[1]">
-                Tipo
+                {t('live.col.type')}
               </th>
               <th scope="col" className="text-left px-2.5 py-[9px] font-semibold text-[10px] uppercase tracking-wider text-fg-dim border-b border-border bg-bg-2 sticky top-0 z-[1] text-[11px]">
-                Regla
+                {t('live.col.rule')}
               </th>
             </tr>
           </thead>
@@ -181,7 +185,7 @@ export default function LiveEvents({ events, attackTypes, onSelectEvent }) {
                         : 'inline-block text-[10px] font-bold px-[7px] py-[3px] rounded font-mono tracking-wide bg-rose-soft text-rose'
                     }
                   >
-                    {evt.verdict === 'valid' ? 'Valid' : 'Anomalous'}
+                    {evt.verdict === 'valid' ? t('live.verdict.valid') : t('live.verdict.anomalous')}
                   </span>
                 </td>
                 <td className="px-2.5 py-[9px] border-b border-border align-middle">
@@ -197,7 +201,11 @@ export default function LiveEvents({ events, attackTypes, onSelectEvent }) {
                           : 'inline-block text-[10px] font-semibold px-1.5 py-0.5 rounded-sm tracking-wide font-mono border border-current text-amber'
                     }
                   >
-                    {evt.action === 'blocked' ? 'BLOCKED' : evt.action === 'allowed' ? 'ALLOWED' : 'FLAGGED'}
+                    {evt.action === 'blocked'
+                      ? t('live.action.blocked')
+                      : evt.action === 'allowed'
+                        ? t('live.action.allowed')
+                        : t('live.action.flagged')}
                   </span>
                 </td>
                 <td className="px-2.5 py-[9px] border-b border-border align-middle">
@@ -212,7 +220,7 @@ export default function LiveEvents({ events, attackTypes, onSelectEvent }) {
         </table>
         {paused && (
           <div className="absolute top-10 left-1/2 -translate-x-1/2 px-3.5 py-1.5 bg-amber-soft text-amber border border-amber rounded-full text-[11px] font-semibold tracking-wide uppercase pointer-events-none">
-            Stream pausado · nuevos eventos en cola
+            {t('live.pausedOverlay')}
           </div>
         )}
       </div>

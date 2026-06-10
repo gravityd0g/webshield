@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { navItems } from '../lib/nav'
 import { useTheme } from '../../../hooks/useTheme'
 
@@ -36,7 +37,36 @@ function Icon({ name }) {
   )
 }
 
+function LanguageToggle() {
+  const { i18n, t } = useTranslation()
+  const current = i18n.language.startsWith('es') ? 'es' : 'en'
+  const baseClass = 'border-0 px-2 py-1 text-[11px] font-semibold rounded-[5px] cursor-pointer font-mono tracking-wider'
+  const activeClass = `${baseClass} bg-bg-3 text-fg shadow-[0_0_0_1px_var(--color-border-strong)]`
+  const inactiveClass = `${baseClass} bg-transparent text-fg-muted`
+  return (
+    <div className="flex bg-bg-2 border border-border rounded-[10px] p-0.5" role="group" aria-label={t('topbar.languageAriaLabel')}>
+      <button
+        type="button"
+        onClick={() => i18n.changeLanguage('en')}
+        className={current === 'en' ? activeClass : inactiveClass}
+        aria-pressed={current === 'en'}
+      >
+        EN
+      </button>
+      <button
+        type="button"
+        onClick={() => i18n.changeLanguage('es')}
+        className={current === 'es' ? activeClass : inactiveClass}
+        aria-pressed={current === 'es'}
+      >
+        ES
+      </button>
+    </div>
+  )
+}
+
 function TopBar({ timeRange, onTimeRangeChange, currentUser }) {
+  const { t } = useTranslation()
   const [theme, toggleTheme] = useTheme()
   return (
     <header
@@ -52,7 +82,7 @@ function TopBar({ timeRange, onTimeRangeChange, currentUser }) {
         </div>
         <div className="flex flex-col leading-tight">
           <strong className="text-[15px] tracking-wide">WebShield</strong>
-          <span className="text-[11px] text-fg-dim uppercase tracking-wider">Security Operations Center</span>
+          <span className="text-[11px] text-fg-dim uppercase tracking-wider">{t('topbar.brandTagline')}</span>
         </div>
       </div>
 
@@ -64,8 +94,8 @@ function TopBar({ timeRange, onTimeRangeChange, currentUser }) {
           <Icon name="search" />
           <input
             type="search"
-            placeholder="Buscar IP, URI, evento, regla CRS…"
-            aria-label="Búsqueda global"
+            placeholder={t('topbar.searchPlaceholder')}
+            aria-label={t('topbar.searchAriaLabel')}
             className="flex-1 bg-transparent border-0 text-fg text-[13px] outline-0 placeholder:text-fg-dim"
           />
           <kbd className="font-mono text-[11px] px-1.5 py-0.5 border border-border-strong rounded bg-bg-3 text-fg-muted">
@@ -77,15 +107,15 @@ function TopBar({ timeRange, onTimeRangeChange, currentUser }) {
       <div className="flex items-center gap-3">
         <div
           className="flex items-center gap-2 px-2.5 py-1.5 bg-bg-2 border border-border rounded-full text-xs text-fg-muted"
-          title="WAF en línea"
+          title={t('topbar.statusTitle')}
         >
           <span
             className="w-2 h-2 rounded-full bg-green animate-pulse-status motion-reduce:animate-none"
             aria-hidden="true"
           />
-          <span>WAF online</span>
+          <span>{t('topbar.status')}</span>
         </div>
-        <div className="flex bg-bg-2 border border-border rounded-[10px] p-0.5" role="group" aria-label="Rango de tiempo">
+        <div className="flex bg-bg-2 border border-border rounded-[10px] p-0.5" role="group" aria-label={t('topbar.searchAriaLabel')}>
           {TIME_RANGES.map((r) => (
             <button
               key={r.id}
@@ -101,19 +131,20 @@ function TopBar({ timeRange, onTimeRangeChange, currentUser }) {
             </button>
           ))}
         </div>
+        <LanguageToggle />
         <button
           type="button"
           onClick={toggleTheme}
           className="w-[34px] h-[34px] grid place-items-center bg-bg-2 border border-border rounded-[10px] text-fg-muted cursor-pointer hover:text-fg hover:border-border-strong transition-colors"
-          aria-label={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
-          title={theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}
+          aria-label={theme === 'dark' ? t('topbar.themeToLight') : t('topbar.themeToDark')}
+          title={theme === 'dark' ? t('topbar.themeTitleLight') : t('topbar.themeTitleDark')}
         >
           <Icon name={theme === 'dark' ? 'sun' : 'moon'} />
         </button>
         <button
           type="button"
           className="relative w-[34px] h-[34px] grid place-items-center bg-bg-2 border border-border rounded-[10px] text-fg-muted cursor-pointer hover:text-fg hover:border-border-strong"
-          aria-label="Notificaciones (3 nuevas)"
+          aria-label={t('topbar.notificationsAriaLabel', { count: 3 })}
         >
           <Icon name="bell" />
           <span className="absolute -top-1 -right-1 bg-rose text-white text-[10px] font-semibold px-[5px] py-px rounded-full border-2 border-bg-1">
@@ -140,62 +171,66 @@ function TopBar({ timeRange, onTimeRangeChange, currentUser }) {
 }
 
 function Sidebar() {
+  const { t } = useTranslation()
   return (
     <nav
       className="w-60 shrink-0 bg-bg-1 border-r border-border flex flex-col px-3 py-4"
-      aria-label="Navegación principal"
+      aria-label={t('nav.ariaLabel')}
     >
       <ul className="list-none m-0 p-0 flex-1 flex flex-col gap-0.5">
-        {navItems.map((item) => (
-          <li key={item.id}>
-            <NavLink
-              to={item.path}
-              className={({ isActive }) =>
-                isActive
-                  ? 'flex items-center gap-[11px] px-3 py-2 rounded-lg text-[13px] font-medium no-underline relative bg-gradient-to-r from-blue-soft to-transparent text-fg shadow-[inset_2px_0_0_var(--color-blue)]'
-                  : 'flex items-center gap-[11px] px-3 py-2 rounded-lg text-[13px] font-medium no-underline relative text-fg-muted hover:bg-surface-hover hover:text-fg'
-              }
-            >
-              <span className="grid place-items-center w-[18px]">
-                <Icon name={item.icon} />
-              </span>
-              <span className="flex-1">{item.label}</span>
-              {item.badge != null && (
-                <span
-                  className={
-                    typeof item.badge === 'string'
-                      ? 'text-[10px] px-1.5 py-0.5 rounded-full font-semibold font-mono bg-rose-soft text-rose tracking-wider'
-                      : 'text-[10px] px-1.5 py-0.5 rounded-full font-semibold font-mono bg-bg-3 text-fg-muted'
-                  }
-                >
-                  {item.badge}
+        {navItems.map((item) => {
+          const badge = item.badgeKey ? t(item.badgeKey) : item.badge
+          return (
+            <li key={item.id}>
+              <NavLink
+                to={item.path}
+                className={({ isActive }) =>
+                  isActive
+                    ? 'flex items-center gap-[11px] px-3 py-2 rounded-lg text-[13px] font-medium no-underline relative bg-gradient-to-r from-blue-soft to-transparent text-fg shadow-[inset_2px_0_0_var(--color-blue)]'
+                    : 'flex items-center gap-[11px] px-3 py-2 rounded-lg text-[13px] font-medium no-underline relative text-fg-muted hover:bg-surface-hover hover:text-fg'
+                }
+              >
+                <span className="grid place-items-center w-[18px]">
+                  <Icon name={item.icon} />
                 </span>
-              )}
-              {item.adminOnly && (
-                <span className="text-[10px] opacity-50" title="Solo admin">
-                  🔒
-                </span>
-              )}
-            </NavLink>
-          </li>
-        ))}
+                <span className="flex-1">{t(item.labelKey)}</span>
+                {badge != null && (
+                  <span
+                    className={
+                      typeof badge === 'string'
+                        ? 'text-[10px] px-1.5 py-0.5 rounded-full font-semibold font-mono bg-rose-soft text-rose tracking-wider'
+                        : 'text-[10px] px-1.5 py-0.5 rounded-full font-semibold font-mono bg-bg-3 text-fg-muted'
+                    }
+                  >
+                    {badge}
+                  </span>
+                )}
+                {item.adminOnly && (
+                  <span className="text-[10px] opacity-50" title={t('nav.adminOnly')}>
+                    🔒
+                  </span>
+                )}
+              </NavLink>
+            </li>
+          )
+        })}
       </ul>
       <div className="border-t border-border mt-3 pt-3 flex flex-col gap-2.5">
         <div className="flex flex-col gap-1 text-[11px] text-fg-dim">
           <div className="flex justify-between px-1.5 py-1 rounded bg-bg-2">
-            <span>Modelo</span>
-            <strong className="text-green">healthy</strong>
+            <span>{t('nav.health.model')}</span>
+            <strong className="text-green">{t('nav.health.healthy')}</strong>
           </div>
           <div className="flex justify-between px-1.5 py-1 rounded bg-bg-2">
-            <span>DB</span>
-            <strong className="text-green">healthy</strong>
+            <span>{t('nav.health.database')}</span>
+            <strong className="text-green">{t('nav.health.healthy')}</strong>
           </div>
           <div className="flex justify-between px-1.5 py-1 rounded bg-bg-2">
-            <span>Backend</span>
-            <strong className="text-green">healthy</strong>
+            <span>{t('nav.health.backend')}</span>
+            <strong className="text-green">{t('nav.health.healthy')}</strong>
           </div>
         </div>
-        <p className="m-0 text-[10px] text-fg-dim font-mono text-center">webshield v0.1.0 · build #boceto</p>
+        <p className="m-0 text-[10px] text-fg-dim font-mono text-center">{t('nav.version')}</p>
       </div>
     </nav>
   )
