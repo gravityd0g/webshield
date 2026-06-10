@@ -1,3 +1,4 @@
+import { NavLink } from 'react-router-dom'
 import { navItems } from '../lib/nav'
 
 const TIME_RANGES = [
@@ -131,14 +132,13 @@ function Sidebar() {
       <ul className="list-none m-0 p-0 flex-1 flex flex-col gap-0.5">
         {navItems.map((item) => (
           <li key={item.id}>
-            <a
-              href={`#${item.id}`}
-              className={
-                item.active
+            <NavLink
+              to={item.path}
+              className={({ isActive }) =>
+                isActive
                   ? 'flex items-center gap-[11px] px-3 py-2 rounded-lg text-[13px] font-medium no-underline relative bg-gradient-to-r from-blue-soft to-transparent text-fg shadow-[inset_2px_0_0_var(--color-blue)]'
                   : 'flex items-center gap-[11px] px-3 py-2 rounded-lg text-[13px] font-medium no-underline relative text-fg-muted hover:bg-surface-hover hover:text-fg'
               }
-              aria-current={item.active ? 'page' : undefined}
             >
               <span className="grid place-items-center w-[18px]">
                 <Icon name={item.icon} />
@@ -160,7 +160,7 @@ function Sidebar() {
                   🔒
                 </span>
               )}
-            </a>
+            </NavLink>
           </li>
         ))}
       </ul>
