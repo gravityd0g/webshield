@@ -10,54 +10,61 @@ import LiveEvents from './components/LiveEvents'
 import EventDrawer from './components/EventDrawer'
 import { useDashboardData } from './useDashboardData'
 
-export default function Dashboard() {
+const BREADCRUMB_TAG = 'ml-auto font-mono text-[10px] px-2 py-1 rounded-full tracking-wider uppercase'
+
+export default function Dashboard({ currentUser }) {
   const [selectedEvent, setSelectedEvent] = useState(null)
   const [timeRange, setTimeRange] = useState('24h')
   const { data, loading, error, reload } = useDashboardData()
 
   return (
-    <AppShell timeRange={timeRange} onTimeRangeChange={setTimeRange}>
+    <AppShell timeRange={timeRange} onTimeRangeChange={setTimeRange} currentUser={currentUser}>
       <div className="flex items-center gap-2 text-xs text-fg-muted mb-1">
-        <span>SOC</span>
-        <span aria-hidden="true">/</span>
+        
         <span>Overview</span>
-        {loading && !data && <span className="dash__breadcrumb-tag">Cargando…</span>}
-        {error && <span className="dash__breadcrumb-tag dash__breadcrumb-tag--error">{error}</span>}
-        {data && !error && <span className="dash__breadcrumb-tag dash__breadcrumb-tag--live">Datos en vivo · MySQL</span>}
+        {loading && !data && <span className={`${BREADCRUMB_TAG} bg-amber-soft text-amber`}>Cargando…</span>}
+        {error && <span className={`${BREADCRUMB_TAG} bg-rose-soft text-rose`}>{error}</span>}
+        {data && !error && <span className={`${BREADCRUMB_TAG} bg-cyan-soft text-cyan`}>Datos en vivo</span>}
       </div>
 
       {error && !data && (
-        <section className="dash__error">
-          <p>No se pudo conectar con la base de datos.</p>
-          <p className="dash__error-detail">Asegúrate de que MySQL esté corriendo y el API en el puerto 3001.</p>
-          <button type="button" className="btn btn--primary" onClick={reload}>Reintentar</button>
+        <section className="p-6 border border-rose bg-rose-soft rounded-xl text-fg flex flex-col gap-2 items-start">
+          <p className="m-0">No se pudo conectar con la base de datos.</p>
+          <p className="m-0 text-xs text-fg-muted">Asegúrate de que MySQL esté corriendo y el API en el puerto 3001.</p>
+          <button
+            type="button"
+            className="bg-blue text-bg-0 border border-blue rounded-[7px] px-3.5 py-2 text-xs font-semibold cursor-pointer hover:brightness-110"
+            onClick={reload}
+          >
+            Reintentar
+          </button>
         </section>
       )}
 
       {data && (
         <>
-          <section className="grid grid--kpis" aria-label="Indicadores clave">
+          <section className="grid grid-cols-12 gap-4">
+            <LiveEvents events={data.recentEvents} attackTypes={data.attackTypes} onSelectEvent={setSelectedEvent} />
+          </section>
+
+          <section className="grid grid-cols-6 max-[1400px]:grid-cols-3 gap-4" aria-label="Indicadores clave">
             {data.kpis.map((k) => <KpiCard key={k.id} {...k} />)}
           </section>
 
-          <section className="grid grid--charts">
-            <div className="grid__span-8"><TrafficTimeline data={data.timeline} /></div>
-            <div className="grid__span-4"><AttackDonut data={data.attackTypes} /></div>
+          <section className="grid grid-cols-12 max-[1100px]:grid-cols-1 gap-4">
+            <div className="col-span-8 max-[1100px]:col-span-1"><TrafficTimeline data={data.timeline} /></div>
+            <div className="col-span-4 max-[1100px]:col-span-1"><AttackDonut data={data.attackTypes} /></div>
           </section>
 
-          <section className="grid grid--widgets">
-            <div className="grid__span-5"><TopAttackerIPs data={data.topIPs} /></div>
-            <div className="grid__span-4"><TopEndpoints data={data.topEndpoints} /></div>
-            <div className="grid__span-3"><ModelHealth data={data.modelHealth} /></div>
-          </section>
-
-          <section className="grid grid--live">
-            <LiveEvents events={data.recentEvents} onSelectEvent={setSelectedEvent} />
+          <section className="grid grid-cols-12 max-[1100px]:grid-cols-1 gap-4">
+            <div className="col-span-5 max-[1100px]:col-span-1"><TopAttackerIPs data={data.topIPs} /></div>
+            <div className="col-span-4 max-[1100px]:col-span-1"><TopEndpoints data={data.topEndpoints} /></div>
+            <div className="col-span-3 max-[1100px]:col-span-1"><ModelHealth data={data.modelHealth} /></div>
           </section>
         </>
       )}
 
-      <EventDrawer event={selectedEvent} onClose={() => setSelectedEvent(null)} />
+      <EventDrawer event={selectedEvent} attackTypes={data?.attackTypes ?? []} onClose={() => setSelectedEvent(null)} />
     </AppShell>
   )
 }

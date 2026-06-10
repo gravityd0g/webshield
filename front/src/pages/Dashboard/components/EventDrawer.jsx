@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 const TABS = [
   { id: 'request', label: 'Request' },
@@ -6,13 +6,22 @@ const TABS = [
   { id: 'triage', label: 'Triage' },
 ]
 
-const ATTACK_LABEL = {
-  sqli: 'SQL Injection',
-  xss: 'Cross-Site Scripting',
-  traversal: 'Path Traversal',
-  encoded: 'Encoded Payload',
-  admin: 'Admin Probing',
-  other: 'Other',
+function buildAttackInfo(attackTypes) {
+  return Object.fromEntries((attackTypes ?? []).map((t) => [t.id, { label: t.label, severity: t.severity }]))
+}
+
+function formatEventCode(event) {
+  if (event.code) return event.code
+  if (!event.id) return '—'
+  return event.id.length > 12 ? `${event.id.slice(0, 8)}…` : event.id
+}
+
+const SEVERITY_CLASS = {
+  1: 'bg-cyan-soft text-cyan',
+  2: 'bg-cyan-soft text-cyan',
+  3: 'bg-amber-soft text-amber',
+  4: 'bg-rose-soft text-rose',
+  5: 'bg-rose-soft text-rose',
 }
 
 function RequestTab({ event }) {
@@ -23,7 +32,7 @@ function RequestTab({ event }) {
         <dl className="m-0 flex flex-col gap-1">
           <div className="flex justify-between items-baseline py-1.5 border-b border-dashed border-border text-xs last:border-b-0">
             <dt className="text-fg-muted">Evento</dt>
-            <dd className="font-mono text-xs m-0 text-fg">{event.id}</dd>
+            <dd className="font-mono text-xs m-0 text-fg" title={event.id}>{formatEventCode(event)}</dd>
           </div>
           <div className="flex justify-between items-baseline py-1.5 border-b border-dashed border-border text-xs last:border-b-0">
             <dt className="text-fg-muted">Timestamp</dt>
@@ -77,7 +86,7 @@ function RequestTab({ event }) {
   )
 }
 
-function ModelTab({ event }) {
+function ModelTab({ event, attackInfo }) {
   if (event.verdict === 'valid') {
     return (
       <div className="py-9 px-4 text-center text-fg-muted">
@@ -90,7 +99,9 @@ function ModelTab({ event }) {
       </div>
     )
   }
-  const maxC = Math.max(...event.features.map((f) => Math.abs(f.contribution)), 0.01)
+  const sortedFeatures = [...event.features].sort((a, b) => Math.abs(b.contribution) - Math.abs(a.contribution))
+  const maxC = Math.max(...sortedFeatures.map((f) => Math.abs(f.contribution)), 0.01)
+  const info = attackInfo[event.attackType]
   return (
     <>
       <div className="mb-[22px]">
@@ -135,7 +146,17 @@ function ModelTab({ event }) {
         <h3 className="m-0 mb-2.5 text-[11px] tracking-wider uppercase text-fg-dim font-semibold">
           Tipo de ataque inferido
         </h3>
-        <p className="m-0 text-sm font-semibold text-rose">{ATTACK_LABEL[event.attackType] ?? '—'}</p>
+        <div className="flex items-center gap-2.5">
+          <p className="m-0 text-sm font-semibold text-rose">{info?.label ?? event.attackType ?? '—'}</p>
+          {info?.severity != null && (
+            <span
+              className={`inline-block text-[10px] font-bold px-[7px] py-[3px] rounded font-mono tracking-wide ${SEVERITY_CLASS[info.severity] ?? 'bg-bg-3 text-fg-muted'}`}
+              title="Severidad del tipo de ataque (1-5)"
+            >
+              SEV {info.severity}/5
+            </span>
+          )}
+        </div>
       </div>
       <div className="mb-[22px]">
         <h3 className="m-0 mb-2.5 text-[11px] tracking-wider uppercase text-fg-dim font-semibold">
@@ -145,7 +166,7 @@ function ModelTab({ event }) {
           Aporte de cada feature al score final. Ayuda al analista a entender por qué el modelo clasificó como anómalo.
         </p>
         <ul className="list-none m-0 p-0 flex flex-col gap-2">
-          {event.features.map((f) => (
+          {sortedFeatures.map((f) => (
             <li key={f.name}>
               <div className="flex justify-between text-[11px] text-fg-muted">
                 <code className="text-fg bg-bg-3 px-[5px] py-px rounded-sm">{f.name}</code>
@@ -254,8 +275,9 @@ function TriageTab({ event }) {
   )
 }
 
-export default function EventDrawer({ event, onClose }) {
+export default function EventDrawer({ event, attackTypes, onClose }) {
   const [tab, setTab] = useState('request')
+  const attackInfo = useMemo(() => buildAttackInfo(attackTypes), [attackTypes])
 
   useEffect(() => {
     if (event) setTab('request')
@@ -286,8 +308,8 @@ export default function EventDrawer({ event, onClose }) {
       >
         <header className="p-5 border-b border-border flex justify-between gap-4">
           <div>
-            <p className="m-0 mb-1 text-[10px] tracking-wider uppercase text-fg-dim font-mono">
-              Evento {event.id}
+            <p className="m-0 mb-1 text-[10px] tracking-wider uppercase text-fg-dim font-mono" title={event.id}>
+              Evento {formatEventCode(event)}
             </p>
             <h2 id="drawer-title" className="m-0 text-sm font-semibold flex items-center gap-2.5 flex-wrap">
               <span
@@ -341,7 +363,7 @@ export default function EventDrawer({ event, onClose }) {
 
         <div className="flex-1 overflow-y-auto p-5" role="tabpanel">
           {tab === 'request' && <RequestTab event={event} />}
-          {tab === 'model' && <ModelTab event={event} />}
+          {tab === 'model' && <ModelTab event={event} attackInfo={attackInfo} />}
           {tab === 'triage' && <TriageTab event={event} />}
         </div>
       </aside>

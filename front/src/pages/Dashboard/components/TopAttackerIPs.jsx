@@ -1,4 +1,21 @@
 export default function TopAttackerIPs({ data }) {
+  if (!data?.length) {
+    return (
+      <section
+        className="bg-gradient-to-b from-bg-2 to-bg-1 border border-border rounded-[14px] px-[18px] pt-[18px] pb-4 shadow-panel flex flex-col gap-3.5 min-w-0"
+        aria-labelledby="top-ips-title"
+      >
+        <header className="flex items-start justify-between gap-4">
+          <div>
+            <h2 id="top-ips-title" className="m-0 text-sm font-semibold tracking-wide text-fg">
+              Top attacker IPs
+            </h2>
+            <p className="mt-0.5 mb-0 text-[11px] text-fg-dim">Sin IPs registradas en las últimas 24h</p>
+          </div>
+        </header>
+      </section>
+    )
+  }
   return (
     <section
       className="bg-gradient-to-b from-bg-2 to-bg-1 border border-border rounded-[14px] px-[18px] pt-[18px] pb-4 shadow-panel flex flex-col gap-3.5 min-w-0"
@@ -74,10 +91,12 @@ export default function TopAttackerIPs({ data }) {
                       ? 'inline-block text-[10px] font-bold px-[7px] py-[3px] rounded font-mono tracking-wide bg-rose-soft text-rose'
                       : row.status === 'watch'
                         ? 'inline-block text-[10px] font-bold px-[7px] py-[3px] rounded font-mono tracking-wide bg-amber-soft text-amber'
-                        : 'inline-block text-[10px] font-bold px-[7px] py-[3px] rounded font-mono tracking-wide bg-cyan-soft text-cyan'
+                        : row.status === 'allowed'
+                          ? 'inline-block text-[10px] font-bold px-[7px] py-[3px] rounded font-mono tracking-wide bg-cyan-soft text-cyan'
+                          : 'inline-block text-[10px] font-bold px-[7px] py-[3px] rounded font-mono tracking-wide bg-bg-3 text-fg-muted'
                   }
                 >
-                  {row.status === 'blocked' ? 'BLOCKED' : row.status === 'watch' ? 'WATCHLIST' : 'ALLOWED'}
+                  {row.status === 'blocked' ? 'BLOCKED' : row.status === 'watch' ? 'WATCHLIST' : row.status === 'allowed' ? 'ALLOWED' : '—'}
                 </span>
               </td>
             </tr>
