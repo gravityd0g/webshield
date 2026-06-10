@@ -1,9 +1,11 @@
 import joblib
 import pandas as pd
+from pathlib import Path
 from urllib.parse import urlparse
 from build_features import build_features
 
-artifact = joblib.load("webshield_rf_v1.joblib")
+_MODEL_PATH = Path(__file__).resolve().parent / "webshield_rf_v1.joblib"
+artifact = joblib.load(_MODEL_PATH)
 
 model = artifact["model"]
 feature_names = artifact["feature_names"]
@@ -24,7 +26,8 @@ def request_to_row(method, full_url, headers=None, body=""):
         "Cookie": headers.get("Cookie", ""),
         "User-Agent": headers.get("User-Agent", ""),
         "Content-Length": headers.get("Content-Length", len(body or "")),
-        "Host-Header": headers.get("Host", ""),
+        # In the ECML dataset this column is the HTTP version line (HTTP/1.0), not the hostname.
+        "Host-Header": headers.get("Host-Header", "HTTP/1.1"),
     }
 
     return pd.DataFrame([row])
@@ -35,11 +38,19 @@ def evaluate_http_request(method, full_url, headers=None, body=""):
 
     X_req = build_features(df_req, feature_names=feature_names)
 
-    pred = model.predict(X_req)[0]
-    prob_anomalous = model.predict_proba(X_req)[0, 1]
+    prob_anomalous = float(model.predict_proba(X_req)[0, 1])
+    verdict = "anomalous" if prob_anomalous >= 0.5 else "valid"
 
     return {
-        "prediction": int(pred),
-        "label": "Anomalous" if pred == 1 else "Valid",
-        "prob_anomalous": float(prob_anomalous),
+        "verdict": verdict,
+        "label": "Anomalous" if verdict == "anomalous" else "Valid",
+        "prob_anomalous": prob_anomalous,
+        "action": waf_action(prob_anomalous),
     }
+
+
+def waf_action(prob_anomalous, block_at=0.5):
+    """WAF policy: block any request the model classifies as anomalous."""
+    if prob_anomalous >= block_at:
+        return "blocked"
+    return "allowed"

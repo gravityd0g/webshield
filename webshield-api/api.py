@@ -1,4 +1,7 @@
 from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
+
+from evaluate_http_request import evaluate_http_request
 
 app = FastAPI()
 
@@ -24,15 +27,15 @@ async def ml_waf_middleware(request: Request, call_next):
         body=body,
     )
 
-    # Primero úsalo en modo monitoreo
     request.state.ml_security_result = result
 
-    # Después de validar falsos positivos, podrías bloquear:
-    if result["prob_anomalous"] >= 0.85:
+    if result["action"] == "blocked":
         return JSONResponse(
             status_code=403,
             content={
                 "detail": "Request blocked by ML security model",
+                "verdict": result["verdict"],
+                "action": result["action"],
                 "score": result["prob_anomalous"],
             },
         )
