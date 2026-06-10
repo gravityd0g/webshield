@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mi perfil — Recetario</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg sticky-top">
+  <div class="container">
+    <a class="navbar-brand" href="/">Recet<span>ario</span></a>
+    <div class="ms-auto d-flex gap-2">
+      <a href="/recetas.html" class="btn btn-outline-naranja btn-sm">Recetas</a>
+      <a href="/crear.html" class="btn btn-naranja btn-sm">+ Nueva</a>
+      <button class="btn btn-outline-naranja btn-sm" onclick="cerrarSesion()">Salir</button>
+    </div>
+  </div>
+</nav>
+
+<div class="container py-5">
+  <div class="row g-4">
+    <div class="col-lg-3">
+      <div class="perfil-sidebar text-center mb-3">
+        <div class="perfil-avatar" id="avatar-letra">?</div>
+        <h5 style="font-family:Georgia,serif;font-weight:700;margin-bottom:.2rem;" id="perfil-nombre">Cargando...</h5>
+        <p style="color:var(--muted);font-size:.82rem;margin-bottom:.3rem;" id="perfil-email"></p>
+        <p style="color:var(--muted);font-size:.82rem;" id="perfil-bio"></p>
+      </div>
+      <div class="perfil-sidebar">
+        <nav class="nav flex-column nav-perfil">
+          <a class="nav-link active" href="#" onclick="mostrarTab('mis-recetas', this)">Mis recetas</a>
+          <a class="nav-link" href="#" onclick="mostrarTab('favoritos', this)">Favoritos</a>
+          <a class="nav-link" href="#" onclick="mostrarTab('editar', this)">Editar perfil</a>
+        </nav>
+      </div>
+    </div>
+
+    <div class="col-lg-9">
+
+      <div id="tab-mis-recetas">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h4 style="font-family:Georgia,serif;font-weight:700;margin:0;">Mis recetas</h4>
+          <a href="/crear.html" class="btn btn-naranja btn-sm">+ Nueva receta</a>
+        </div>
+        <div class="row g-4" id="mis-recetas-grid">
+          <div class="col-12 text-center py-4"><div class="spinner-border" style="color:var(--terracota)"></div></div>
+        </div>
+      </div>
+
+      <div id="tab-favoritos" class="d-none">
+        <h4 style="font-family:Georgia,serif;font-weight:700;margin-bottom:1.5rem;">Favoritos</h4>
+        <div class="row g-4" id="favoritos-grid">
+          <div class="col-12 text-center py-4"><div class="spinner-border" style="color:var(--terracota)"></div></div>
+        </div>
+      </div>
+
+      <div id="tab-editar" class="d-none">
+        <h4 style="font-family:Georgia,serif;font-weight:700;margin-bottom:1.5rem;">Editar perfil</h4>
+        <div class="card border-0 shadow-sm rounded-1 p-4" style="max-width:480px;border:1px solid var(--borde)!important;">
+          <div id="edit-success" class="alert alert-success d-none" style="font-size:.88rem;">Perfil actualizado.</div>
+          <form id="edit-form">
+            <div class="mb-3">
+              <label class="form-label" style="font-weight:600;font-family:'Segoe UI',sans-serif;font-size:.88rem;">Nombre</label>
+              <input type="text" id="edit-nombre" class="form-control">
+            </div>
+            <div class="mb-3">
+              <label class="form-label" style="font-weight:600;font-family:'Segoe UI',sans-serif;font-size:.88rem;">Biografía</label>
+              <textarea id="edit-bio" class="form-control" rows="3" placeholder="Cuéntanos sobre ti..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-naranja">Guardar</button>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<footer><p><strong>Recetario</strong> &copy; 2024</p></footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/app.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', async () => {
+    if (!estaLogueado()) { location.href = '/login.html'; return; }
+
+    const user = await api('/api/auth/perfil');
+    document.getElementById('avatar-letra').textContent = (user.nombre || user.username || '?')[0].toUpperCase();
+    document.getElementById('perfil-nombre').textContent = user.nombre || user.username;
+    document.getElementById('perfil-email').textContent  = user.email;
+    document.getElementById('perfil-bio').textContent    = user.bio || '';
+    document.getElementById('edit-nombre').value = user.nombre || '';
+    document.getElementById('edit-bio').value    = user.bio    || '';
+
+    await cargarMisRecetas();
+  });
+
+  async function cargarMisRecetas() {
+    const recetas = await api('/api/recetas');
+    const username = localStorage.getItem('username');
+    const mias = Array.isArray(recetas) ? recetas.filter(r => r.username === username) : [];
+    const grid = document.getElementById('mis-recetas-grid');
+    if (!mias.length) {
+      grid.innerHTML = `<div class="col-12 text-center py-5" style="color:var(--muted)">
+        <p>Aún no tienes recetas publicadas.</p>
+        <a href="/crear.html" class="btn btn-naranja mt-2">Crear mi primera receta</a>
+      </div>`;
+      return;
+    }
+    grid.innerHTML = mias.map(r => `
+      <div class="col-sm-6">
+        <div class="receta-card card h-100">
+          <a href="/receta.html?id=${r.id}" class="text-decoration-none">
+            <img src="${r.imagen_url || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600'}"
+                 alt="${r.titulo}" style="height:150px;object-fit:cover;width:100%;"
+                 onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600'">
+            <div class="card-body">
+              <div class="titulo">${r.titulo}</div>
+              <div style="color:var(--muted);font-size:.8rem;font-family:'Segoe UI',sans-serif;">${r.categoria_nombre || 'Sin categoría'} &middot; ${r.dificultad}</div>
+            </div>
+          </a>
+          <div class="card-footer bg-transparent pb-3 px-3" style="border-top:1px solid var(--borde);">
+            <button class="btn btn-outline-danger btn-sm w-100" style="font-size:.82rem;" onclick="eliminarReceta(${r.id}, this)">Eliminar receta</button>
+          </div>
+        </div>
+      </div>`).join('');
+  }
+
+  async function cargarFavoritos() {
+    const favs = await api('/api/favoritos');
+    const grid = document.getElementById('favoritos-grid');
+    if (!Array.isArray(favs) || !favs.length) {
+      grid.innerHTML = `<div class="col-12 text-center py-5" style="color:var(--muted)">
+        <p>Aún no tienes recetas guardadas.</p>
+        <a href="/recetas.html" class="btn btn-naranja mt-2">Explorar recetas</a>
+      </div>`;
+      return;
+    }
+    grid.innerHTML = favs.map(tarjetaReceta).join('');
+  }
+
+  async function eliminarReceta(id, btn) {
+    if (!confirm('¿Eliminar esta receta? Esta acción no se puede deshacer.')) return;
+    btn.disabled = true; btn.textContent = 'Eliminando...';
+    const res = await api('/api/recetas/' + id, 'DELETE');
+    if (res.mensaje) { toast('Receta eliminada', 'success'); await cargarMisRecetas(); }
+    else { toast(res.error || 'Error al eliminar', 'error'); btn.disabled = false; btn.textContent = 'Eliminar receta'; }
+  }
+
+  document.getElementById('edit-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const res = await api('/api/auth/perfil', 'PUT', {
+      nombre: document.getElementById('edit-nombre').value,
+      bio:    document.getElementById('edit-bio').value
+    });
+    if (res.mensaje) {
+      document.getElementById('edit-success').classList.remove('d-none');
+      localStorage.setItem('nombre', document.getElementById('edit-nombre').value);
+      setTimeout(() => document.getElementById('edit-success').classList.add('d-none'), 3000);
+    }
+  });
+
+  async function mostrarTab(tab, el) {
+    document.querySelectorAll('[id^="tab-"]').forEach(t => t.classList.add('d-none'));
+    document.getElementById('tab-' + tab).classList.remove('d-none');
+    document.querySelectorAll('.nav-perfil .nav-link').forEach(l => l.classList.remove('active'));
+    el.classList.add('active');
+    if (tab === 'favoritos') await cargarFavoritos();
+  }
+</script>
+</body>
+</html>
