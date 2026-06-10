@@ -1,0 +1,39 @@
+# webshield_connector.py
+import requests
+import urllib3
+urllib3.disable_warnings()
+
+INFRA2_URL = "https://172.16.67.67/analyze"
+API_KEY = "e6eead947b8dbf7f34aa0fa2c95b70a8f0a2b7c39266c1efbc5ccea9520c42fb"
+
+def analyze(uri="/", query="", user_agent="", method="GET", cookie=""):
+    """
+    Send a request to WebShield IPS for analysis.
+    Returns: dict with verdict (PASS/BLOCK), reason, confidence
+    """
+    try:
+        response = requests.post(
+            INFRA2_URL,
+            headers={"Authorization": f"Bearer {API_KEY}"},
+            json={
+                "uri": uri,
+                "query": query,
+                "user_agent": user_agent,
+                "method": method,
+                "cookie": cookie
+            },
+            verify=False,
+            timeout=5
+        )
+        return response.json()
+    except requests.Timeout:
+        return {"verdict": "PASS", "reason": "timeout", "confidence": 0}
+    except Exception as e:
+        return {"verdict": "PASS", "reason": str(e), "confidence": 0}
+
+def is_blocked(uri="/", query="", user_agent="", method="GET", cookie=""):
+    """
+    Simple boolean check — returns True if request should be blocked.
+    """
+    result = analyze(uri, query, user_agent, method, cookie)
+    return result.get("verdict") == "BLOCK"
