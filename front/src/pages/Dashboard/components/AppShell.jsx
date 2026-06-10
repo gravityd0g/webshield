@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom'
 import { navItems } from '../lib/nav'
+import { useTheme } from '../../../hooks/useTheme'
 
 const TIME_RANGES = [
   { id: '1h', label: '1h' },
@@ -22,6 +23,11 @@ function Icon({ name }) {
       <circle cx="12" cy="12" r="3" />
       <path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" />
     </>,
+    sun: <>
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+    </>,
+    moon: <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />,
   }
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -31,6 +37,7 @@ function Icon({ name }) {
 }
 
 function TopBar({ timeRange, onTimeRangeChange, currentUser }) {
+  const [theme, toggleTheme] = useTheme()
   return (
     <header
       className="grid grid-cols-[280px_1fr_auto] items-center gap-6 px-5 py-2.5 bg-gradient-to-b from-bg-2 to-bg-1 border-b border-border sticky top-0 z-30"
@@ -94,6 +101,15 @@ function TopBar({ timeRange, onTimeRangeChange, currentUser }) {
             </button>
           ))}
         </div>
+        <button
+          type="button"
+          onClick={toggleTheme}
+          className="w-[34px] h-[34px] grid place-items-center bg-bg-2 border border-border rounded-[10px] text-fg-muted cursor-pointer hover:text-fg hover:border-border-strong transition-colors"
+          aria-label={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+          title={theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}
+        >
+          <Icon name={theme === 'dark' ? 'sun' : 'moon'} />
+        </button>
         <button
           type="button"
           className="relative w-[34px] h-[34px] grid place-items-center bg-bg-2 border border-border rounded-[10px] text-fg-muted cursor-pointer hover:text-fg hover:border-border-strong"
