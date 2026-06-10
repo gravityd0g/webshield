@@ -9,7 +9,6 @@ import ModelHealth from './components/ModelHealth'
 import LiveEvents from './components/LiveEvents'
 import EventDrawer from './components/EventDrawer'
 import { useDashboardData } from './useDashboardData'
-import './Dashboard.css'
 
 export default function Dashboard() {
   const [selectedEvent, setSelectedEvent] = useState(null)
