@@ -1,11 +1,27 @@
 import cors from 'cors'
+import helmet from 'helmet'
 
-const DEFAULT_ORIGINS = 'http://localhost:5173,http://127.0.0.1:5173'
+const DEFAULT_ORIGINS = 'https://localhost:5173,https://127.0.0.1:5173'
+
+export function helmetMiddleware() {
+  return helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", 'data:'],
+        connectSrc: ["'self'"],
+        objectSrc: ["'none'"],
+        upgradeInsecureRequests: [],
+      },
+    },
+    crossOriginEmbedderPolicy: false,
+    referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+  })
+}
 
 export function securityHeaders(_req, res, next) {
-  res.setHeader('X-Content-Type-Options', 'nosniff')
-  res.setHeader('X-Frame-Options', 'DENY')
-  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin')
   res.setHeader('Cache-Control', 'no-store')
   res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
   next()
@@ -27,7 +43,8 @@ export function corsMiddleware() {
       }
       callback(new Error('Origin not allowed'))
     },
-    methods: ['GET'],
+    credentials: true,
+    methods: ['GET', 'POST'],
     allowedHeaders: ['Content-Type'],
     maxAge: 600,
   })

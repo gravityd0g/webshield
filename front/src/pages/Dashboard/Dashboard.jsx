@@ -13,13 +13,13 @@ import { useDashboardData } from './useDashboardData'
 
 const BREADCRUMB_TAG = 'ml-auto font-mono text-[10px] px-2 py-1 rounded-full tracking-wider uppercase'
 
-export default function Dashboard({ currentUser }) {
+export default function Dashboard({ currentUser, onLogout }) {
   const { t } = useTranslation()
   const [selectedEvent, setSelectedEvent] = useState(null)
   const { data, loading, error, reload } = useDashboardData()
 
   return (
-    <AppShell currentUser={currentUser}>
+    <AppShell currentUser={currentUser} onLogout={onLogout}>
       <div className="flex items-center gap-2 text-xs text-fg-muted mb-1">
         <span>{t('breadcrumb.overview')}</span>
         {loading && !data && <span className={`${BREADCRUMB_TAG} bg-amber-soft text-amber`}>{t('breadcrumb.loading')}</span>}

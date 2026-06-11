@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import AccessibilityToggles from '../../components/AccessibilityToggles'
+import { register as apiRegister } from '../../api/auth'
 
 function ShieldIcon() {
   return (
@@ -65,7 +66,7 @@ export default function Register({ onRegistered, onGoToLogin }) {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault()
     setError('')
 
@@ -83,10 +84,13 @@ export default function Register({ onRegistered, onGoToLogin }) {
     }
 
     setLoading(true)
-    setTimeout(() => {
+    try {
+      const user = await apiRegister({ email: email.trim(), password, name: name.trim() })
+      if (onRegistered) onRegistered(user)
+    } catch (err) {
+      setError(err.message || t('auth.register.errorMissingFields'))
       setLoading(false)
-      if (onRegistered) onRegistered({ name, email })
-    }, 800)
+    }
   }
 
   return (

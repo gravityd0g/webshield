@@ -52,7 +52,8 @@
     "themeToDark": "Cambiar a modo oscuro",
     "themeTitleLight": "Modo claro",
     "themeTitleDark": "Modo oscuro",
-    "languageAriaLabel": "Cambiar idioma"
+    "languageAriaLabel": "Cambiar idioma",
+    "logout": "Cerrar sesión"
   },
   "breadcrumb": {
     "overview": "Vista general",

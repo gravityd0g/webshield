@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import AccessibilityToggles from '../../components/AccessibilityToggles'
+import { login as apiLogin } from '../../api/auth'
 
 function ShieldIcon() {
   return (
@@ -53,7 +54,7 @@ export default function Login({ onLogin, onGoToRegister }) {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault()
     setError('')
 
@@ -63,10 +64,13 @@ export default function Login({ onLogin, onGoToRegister }) {
     }
 
     setLoading(true)
-    setTimeout(() => {
+    try {
+      const user = await apiLogin({ email: email.trim(), password })
+      onLogin(user)
+    } catch (err) {
+      setError(err.message || t('auth.login.errorMissingFields'))
       setLoading(false)
-      onLogin({ email })
-    }, 800)
+    }
   }
 
   return (
