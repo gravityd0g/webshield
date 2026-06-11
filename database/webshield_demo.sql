@@ -1,19 +1,6 @@
 -- ============================================================================
 -- DEMO DATA — eventos sintéticos para visualización del dashboard.
 --
--- Distribución temporal pensada para que los filtros 1h/24h/7d/30d se vean
--- distintos cuando se conecten:
---   - 5  eventos en última 1 hora
---   - 10 eventos entre 1h-24h
---   - 12 eventos entre 1-7 días
---   - 13 eventos entre 7-30 días
---
--- Estrategia: la stored procedure SOLO escribe a request_events para no
--- chocar con triggers. request_http y request_event_types se pueblan
--- después con SELECT desde request_events.
---
--- Todos los eventos llevan prefijo 'demo-'. Para limpiarlos:
---   DELETE FROM request_events WHERE event_code LIKE 'demo-%';
 -- ============================================================================
 
 USE webshield;
