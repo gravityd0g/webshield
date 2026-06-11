@@ -21,16 +21,23 @@ WHERE NOT EXISTS (SELECT 1 FROM model_health_snapshots);
 
 INSERT IGNORE INTO request_events (
     event_code, detected_at, verdict, action, confidence_score,
-    waf_rule, latency_ms, client_ip, client_country
+    primary_attack_type, waf_rule, latency_ms, client_ip, client_country
 ) VALUES
-    ('evt-9281', NOW() - INTERVAL 2 MINUTE,  'anomalous', 'blocked', 0.94000, 'CRS-942100', 21, '192.168.1.47',   NULL),
-    ('evt-9280', NOW() - INTERVAL 4 MINUTE,  'valid',     'allowed', 0.02000, NULL,         18, '10.0.5.21',      NULL),
-    ('evt-9279', NOW() - INTERVAL 6 MINUTE,  'anomalous', 'blocked', 0.89000, 'CRS-941100', 24, '203.0.113.8',    'CL'),
-    ('evt-9278', NOW() - INTERVAL 8 MINUTE,  'valid',     'allowed', 0.04000, NULL,         19, '10.0.5.21',      NULL),
-    ('evt-9277', NOW() - INTERVAL 10 MINUTE, 'anomalous', 'blocked', 0.97000, 'CRS-930100', 22, '198.51.100.15',  'NL'),
-    ('evt-9275', NOW() - INTERVAL 14 MINUTE, 'anomalous', 'flagged', 0.62000, 'CRS-932100', 25, '203.0.113.8',    'CL'),
-    ('evt-9273', NOW() - INTERVAL 18 MINUTE, 'anomalous', 'blocked', 0.81000, 'CRS-913100', 23, '45.155.205.211', 'RU'),
-    ('evt-9272', NOW() - INTERVAL 20 MINUTE, 'anomalous', 'blocked', 0.91000, 'CRS-942110', 20, '192.168.1.47',   NULL);
+    ('evt-9281', NOW() - INTERVAL 2 MINUTE,  'anomalous', 'blocked', 0.94000, 'sqli',      'CRS-942100', 21, '192.168.1.47',   NULL),
+    ('evt-9280', NOW() - INTERVAL 4 MINUTE,  'valid',     'allowed', 0.02000, NULL,        NULL,         18, '10.0.5.21',      NULL),
+    ('evt-9279', NOW() - INTERVAL 6 MINUTE,  'anomalous', 'blocked', 0.89000, 'xss',       'CRS-941100', 24, '203.0.113.8',    'CL'),
+    ('evt-9278', NOW() - INTERVAL 8 MINUTE,  'valid',     'allowed', 0.04000, NULL,        NULL,         19, '10.0.5.21',      NULL),
+    ('evt-9277', NOW() - INTERVAL 10 MINUTE, 'anomalous', 'blocked', 0.97000, 'traversal', 'CRS-930100', 22, '198.51.100.15',  'NL'),
+    ('evt-9275', NOW() - INTERVAL 14 MINUTE, 'anomalous', 'flagged', 0.62000, 'admin',     'CRS-932100', 25, '203.0.113.8',    'CL'),
+    ('evt-9273', NOW() - INTERVAL 18 MINUTE, 'anomalous', 'blocked', 0.81000, 'admin',     'CRS-913100', 23, '45.155.205.211', 'RU'),
+    ('evt-9272', NOW() - INTERVAL 20 MINUTE, 'anomalous', 'blocked', 0.91000, 'sqli',      'CRS-942110', 20, '192.168.1.47',   NULL);
+
+-- Tabla puente attack_type por evento (la que las views consultan)
+INSERT IGNORE INTO request_event_types (event_id, attack_type_id)
+SELECT re.event_id, c.attack_type_id
+FROM request_events re
+JOIN attack_type_catalog c ON c.code = re.primary_attack_type
+WHERE re.primary_attack_type IS NOT NULL;
 
 INSERT IGNORE INTO request_http (
     event_id, http_method, uri, host_header, `host`, user_agent,
