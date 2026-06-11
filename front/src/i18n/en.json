@@ -2,7 +2,6 @@
   "common": {
     "loading": "Loading…",
     "retry": "Retry",
-    "comingSoon": "Coming soon",
     "viewAll": "View all",
     "cancel": "Cancel",
     "save": "Save"
@@ -49,35 +48,11 @@
     "brandTagline": "AI request inspection",
     "status": "WebShield online",
     "statusTitle": "WebShield active",
-    "searchPlaceholder": "Search IP, URI, event, rule…",
-    "searchAriaLabel": "Global search",
-    "notificationsAriaLabel": "Notifications ({{count}} new)",
     "themeToLight": "Switch to light mode",
     "themeToDark": "Switch to dark mode",
     "themeTitleLight": "Light mode",
     "themeTitleDark": "Dark mode",
     "languageAriaLabel": "Change language"
-  },
-  "nav": {
-    "ariaLabel": "Main navigation",
-    "dashboard": "Dashboard",
-    "live": "Live events",
-    "alerts": "Alerts",
-    "triage": "Triage queue",
-    "investigations": "Investigations",
-    "rules": "Rules & model",
-    "users": "Users",
-    "audit": "Audit log",
-    "settings": "Settings",
-    "adminOnly": "Admin only",
-    "liveBadge": "LIVE",
-    "health": {
-      "model": "Model",
-      "database": "Database",
-      "backend": "Backend",
-      "healthy": "healthy"
-    },
-    "version": "webshield v0.1.0 · build #sketch"
   },
   "breadcrumb": {
     "overview": "Overview",
@@ -219,41 +194,6 @@
       "commentPlaceholder": "Notes for the team (kept in audit log)…",
       "viewIpEvents": "View events from {{ip}}",
       "save": "Save triage"
-    }
-  },
-  "placeholder": {
-    "comingSoon": "Coming soon",
-    "live": {
-      "title": "Live events",
-      "description": "Full stream of inspected requests in real time. Filtered by verdict, action, IP and attack type, with a per-event detail drawer."
-    },
-    "alerts": {
-      "title": "Alerts",
-      "description": "Actionable alerts derived from critical events: confirmed SQLi, recurring attacker IP, anomalous traffic spikes. Notifications, acknowledgments and incident grouping."
-    },
-    "triage": {
-      "title": "Triage queue",
-      "description": "Queue of events pending review: the analyst marks True Positive / False Positive / Escalated, assigns severity and leaves notes that feed back into the model."
-    },
-    "investigations": {
-      "title": "Investigations",
-      "description": "Forensic cases: grouping of related events, reconstructed timeline, artifacts (IPs, payloads, user agents) and evidence export."
-    },
-    "rules": {
-      "title": "Rules & model",
-      "description": "OWASP CRS rule configuration and ML model management: versions, metrics, retraining, deployment and rollback."
-    },
-    "users": {
-      "title": "Users",
-      "description": "User administration: roles (analyst, admin), per-section permissions, invitations, MFA and password policies."
-    },
-    "audit": {
-      "title": "Audit log",
-      "description": "Immutable record of user actions and configuration changes. Search by actor, resource, date and export for compliance."
-    },
-    "settings": {
-      "title": "Settings",
-      "description": "General WebShield configuration: email/Slack notifications, integrations, branding, data retention and backups."
     }
   }
 }

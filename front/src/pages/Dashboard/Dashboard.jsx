@@ -16,11 +16,10 @@ const BREADCRUMB_TAG = 'ml-auto font-mono text-[10px] px-2 py-1 rounded-full tra
 export default function Dashboard({ currentUser }) {
   const { t } = useTranslation()
   const [selectedEvent, setSelectedEvent] = useState(null)
-  const [timeRange, setTimeRange] = useState('24h')
   const { data, loading, error, reload } = useDashboardData()
 
   return (
-    <AppShell timeRange={timeRange} onTimeRangeChange={setTimeRange} currentUser={currentUser}>
+    <AppShell currentUser={currentUser}>
       <div className="flex items-center gap-2 text-xs text-fg-muted mb-1">
         <span>{t('breadcrumb.overview')}</span>
         {loading && !data && <span className={`${BREADCRUMB_TAG} bg-amber-soft text-amber`}>{t('breadcrumb.loading')}</span>}
