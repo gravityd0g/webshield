@@ -9,6 +9,7 @@ import path from 'node:path'
 import dashboardRouter from './routes/dashboard.js'
 import authRouter from './routes/auth.js'
 import modelRouter from './routes/model.js'
+import ingestRouter from './routes/ingest.js'
 import { ping } from './db.js'
 import { requireAuth } from './middleware/auth.js'
 import {
@@ -30,7 +31,7 @@ app.use(helmetMiddleware())
 app.use(securityHeaders)
 app.use(corsMiddleware())
 app.use(cookieParser())
-app.use(express.json({ limit: '32kb' }))
+app.use(express.json({ limit: '2mb' }))
 
 app.get('/api/health', async (_req, res) => {
   try {
@@ -43,6 +44,7 @@ app.get('/api/health', async (_req, res) => {
 
 app.use('/api/auth', authRouter)
 app.use('/api/model', modelRouter)
+app.use('/api/ingest', ingestRouter)
 app.use('/api/dashboard', requireAuth, dashboardRouter)
 
 app.use((err, _req, res, next) => {
@@ -51,6 +53,11 @@ app.use((err, _req, res, next) => {
     return
   }
   next(err)
+})
+
+// eslint-disable-next-line no-unused-vars
+app.use((err, _req, res, _next) => {
+  sendSafeError(res, 500, 'internal error', err)
 })
 
 function loadTls() {

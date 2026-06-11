@@ -1,11 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
 import { fetchDashboard } from '../../api/dashboard'
-import { kpis, timeline, attackTypes, topIPs, topEndpoints, modelHealth, recentEvents } from './mockData'
-
-// Backend aún no conectado a la DB nueva (issue #34). Cuando esté listo,
-// poner USE_MOCK = false para que el front llame al API real.
-const USE_MOCK = false
-const MOCK_DATA = { kpis, timeline, attackTypes, topIPs, topEndpoints, modelHealth, recentEvents }
 
 export function useDashboardData(pollIntervalMs = 30000) {
   const [data, setData] = useState(null)
@@ -14,7 +8,7 @@ export function useDashboardData(pollIntervalMs = 30000) {
 
   const reload = useCallback(async () => {
     try {
-      const next = USE_MOCK ? MOCK_DATA : await fetchDashboard()
+      const next = await fetchDashboard()
       setData(next)
       setError(null)
     } catch (err) {

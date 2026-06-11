@@ -64,64 +64,6 @@
     "errorTitle": "Could not connect to the database.",
     "errorDetail": "Make sure the database is running and the API is on port 3001."
   },
-  "kpi": {
-    "totalRequests": "Total requests",
-    "blocked": "Blocked",
-    "blockRate": "Block rate",
-    "topAttackType": "Top attack type",
-    "latency": "Latency",
-    "uniqueAttackers": "Unique attackers",
-    "period": {
-      "vsYesterday": "vs yesterday",
-      "h24": "24h",
-      "rollingAvg": "rolling avg"
-    }
-  },
-  "chart": {
-    "trafficTitle": "Traffic · 24h",
-    "trafficSubtitle": "Requests per hour, valid vs anomalous (inspector classification).",
-    "legendValid": "Valid",
-    "legendAnomalous": "Anomalous",
-    "attackTitle": "Attack distribution",
-    "attackSubtitle": "% of blocks by category · 24h",
-    "attackEmpty": "No blocks in the last 24h"
-  },
-  "table": {
-    "topIps": {
-      "title": "Top attacker IPs",
-      "subtitle": "IPs with highest anomalous volume · 24h",
-      "empty": "No IPs registered in the last 24h",
-      "ip": "IP",
-      "country": "Country",
-      "total": "Total",
-      "anomalousPct": "% anom",
-      "lastSeen": "Last",
-      "status": "Status",
-      "blocked": "BLOCKED",
-      "watchlist": "WATCHLIST",
-      "allowed": "ALLOWED"
-    },
-    "topEndpoints": {
-      "title": "Most targeted endpoints",
-      "subtitle": "URIs by number of anomalous requests · 24h",
-      "empty": "No data in the last 24h"
-    }
-  },
-  "modelHealth": {
-    "title": "Model health",
-    "subtitle": "Random Forest + OWASP CRS rules",
-    "predictionsPerSecond": "Predictions/sec",
-    "rollingAccuracy": "Accuracy (60 min)",
-    "drift": "Drift score",
-    "lowerIsBetter": "lower is better",
-    "histogramTitle": "Confidence distribution",
-    "histogramValid": "valid",
-    "histogramUncertain": "uncertain",
-    "histogramAnomalous": "anomalous",
-    "statusHealthy": "HEALTHY",
-    "statusDegraded": "DEGRADED",
-    "statusCritical": "CRITICAL"
-  },
   "live": {
     "title": "Live events",
     "subtitle": "Stream of inspected requests — click to inspect",
@@ -141,9 +83,7 @@
       "uri": "URI",
       "verdict": "Verdict",
       "score": "Score",
-      "action": "Action",
-      "type": "Type",
-      "rule": "Rule"
+      "action": "Action"
     },
     "verdict": {
       "valid": "Valid",
@@ -151,14 +91,10 @@
     },
     "action": {
       "blocked": "BLOCKED",
-      "allowed": "ALLOWED",
-      "flagged": "FLAGGED"
+      "allowed": "ALLOWED"
     }
   },
   "drawer": {
-    "tabRequest": "Request",
-    "tabModel": "Model",
-    "tabTriage": "Triage",
     "event": "Event",
     "close": "Close",
     "summary": "Summary",
@@ -166,35 +102,11 @@
     "sourceIp": "Source IP",
     "method": "Method",
     "uri": "URI",
-    "headers": "Headers",
-    "body": "Body",
+    "verdict": "Verdict",
+    "action": "Action",
     "score": "score",
-    "validIntro": "Request classified as <strong>valid</strong> (score {{score}}).",
-    "validDetail": "No rule or ML model was triggered.",
-    "decision": "Decision",
-    "decisionRules": "Deterministic rules",
-    "decisionRuleTriggered": "Rule triggered:",
-    "decisionMl": "ML model",
-    "decisionScoreLine": "Score: {{score}} · class: <strong>anomalous</strong>",
-    "decisionAction": "Action",
-    "attackType": "Inferred attack type",
-    "severityTitle": "Attack type severity (1-5)",
-    "severityShort": "SEV {{value}}/5",
-    "featuresTitle": "Feature contribution (top 5)",
-    "featuresHelp": "Each feature's contribution to the final score. Helps the analyst understand why the model classified the request as anomalous.",
-    "triage": {
-      "markEvent": "Mark event",
-      "tp": "True Positive",
-      "tpHelp": "Confirm real attack",
-      "fp": "False Positive",
-      "fpHelp": "Was legitimate traffic",
-      "escalate": "Escalate",
-      "escalateHelp": "Requires admin review",
-      "severity": "Severity ({{value}}/5)",
-      "comment": "Comment",
-      "commentPlaceholder": "Notes for the team (kept in audit log)…",
-      "viewIpEvents": "View events from {{ip}}",
-      "save": "Save triage"
-    }
+    "headers": "Headers",
+    "noHeaders": "No headers captured.",
+    "body": "Body"
   }
 }
