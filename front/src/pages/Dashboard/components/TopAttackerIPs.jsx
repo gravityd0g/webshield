@@ -1,4 +1,7 @@
+import { useTranslation } from 'react-i18next'
+
 export default function TopAttackerIPs({ data }) {
+  const { t } = useTranslation()
   if (!data?.length) {
     return (
       <section
@@ -8,9 +11,9 @@ export default function TopAttackerIPs({ data }) {
         <header className="flex items-start justify-between gap-4">
           <div>
             <h2 id="top-ips-title" className="m-0 text-sm font-semibold tracking-wide text-fg">
-              Top attacker IPs
+              {t('table.topIps.title')}
             </h2>
-            <p className="mt-0.5 mb-0 text-[11px] text-fg-dim">Sin IPs registradas en las últimas 24h</p>
+            <p className="mt-0.5 mb-0 text-[11px] text-fg-dim">{t('table.topIps.empty')}</p>
           </div>
         </header>
       </section>
@@ -24,37 +27,37 @@ export default function TopAttackerIPs({ data }) {
       <header className="flex items-start justify-between gap-4">
         <div>
           <h2 id="top-ips-title" className="m-0 text-sm font-semibold tracking-wide text-fg flex items-center gap-2.5">
-            Top attacker IPs
+            {t('table.topIps.title')}
           </h2>
-          <p className="mt-0.5 mb-0 text-[11px] text-fg-dim">IPs con mayor volumen anómalo · 24h</p>
+          <p className="mt-0.5 mb-0 text-[11px] text-fg-dim">{t('table.topIps.subtitle')}</p>
         </div>
         <button
           type="button"
           className="bg-bg-3 text-fg-muted border border-border rounded-md px-2.5 py-[5px] text-[11px] cursor-pointer hover:text-fg"
         >
-          Ver todas
+          {t('common.viewAll')}
         </button>
       </header>
       <table className="w-full border-collapse text-xs">
         <thead>
           <tr>
             <th scope="col" className="text-left px-2.5 py-2 font-semibold text-[10px] uppercase tracking-wider text-fg-dim border-b border-border">
-              IP
+              {t('table.topIps.ip')}
             </th>
             <th scope="col" className="text-left px-2.5 py-2 font-semibold text-[10px] uppercase tracking-wider text-fg-dim border-b border-border">
-              País
+              {t('table.topIps.country')}
             </th>
             <th scope="col" className="text-right px-2.5 py-2 font-semibold text-[10px] uppercase tracking-wider text-fg-dim border-b border-border">
-              Total
+              {t('table.topIps.total')}
             </th>
             <th scope="col" className="text-right px-2.5 py-2 font-semibold text-[10px] uppercase tracking-wider text-fg-dim border-b border-border">
-              % anom
+              {t('table.topIps.anomalousPct')}
             </th>
             <th scope="col" className="text-left px-2.5 py-2 font-semibold text-[10px] uppercase tracking-wider text-fg-dim border-b border-border">
-              Última
+              {t('table.topIps.lastSeen')}
             </th>
             <th scope="col" className="text-left px-2.5 py-2 font-semibold text-[10px] uppercase tracking-wider text-fg-dim border-b border-border">
-              Estado
+              {t('table.topIps.status')}
             </th>
           </tr>
         </thead>
@@ -96,7 +99,13 @@ export default function TopAttackerIPs({ data }) {
                           : 'inline-block text-[10px] font-bold px-[7px] py-[3px] rounded font-mono tracking-wide bg-bg-3 text-fg-muted'
                   }
                 >
-                  {row.status === 'blocked' ? 'BLOCKED' : row.status === 'watch' ? 'WATCHLIST' : row.status === 'allowed' ? 'ALLOWED' : '—'}
+                  {row.status === 'blocked'
+                    ? t('table.topIps.blocked')
+                    : row.status === 'watch'
+                      ? t('table.topIps.watchlist')
+                      : row.status === 'allowed'
+                        ? t('table.topIps.allowed')
+                        : '—'}
                 </span>
               </td>
             </tr>

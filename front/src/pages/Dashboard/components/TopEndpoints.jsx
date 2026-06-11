@@ -1,4 +1,7 @@
+import { useTranslation } from 'react-i18next'
+
 export default function TopEndpoints({ data }) {
+  const { t } = useTranslation()
   if (!data?.length) {
     return (
       <section
@@ -8,9 +11,9 @@ export default function TopEndpoints({ data }) {
         <header className="flex items-start justify-between gap-4">
           <div>
             <h2 id="top-endpoints-title" className="m-0 text-sm font-semibold tracking-wide text-fg">
-              Endpoints más atacados
+              {t('table.topEndpoints.title')}
             </h2>
-            <p className="mt-0.5 mb-0 text-[11px] text-fg-dim">Sin datos en las últimas 24h</p>
+            <p className="mt-0.5 mb-0 text-[11px] text-fg-dim">{t('table.topEndpoints.empty')}</p>
           </div>
         </header>
       </section>
@@ -26,9 +29,9 @@ export default function TopEndpoints({ data }) {
       <header className="flex items-start justify-between gap-4">
         <div>
           <h2 id="top-endpoints-title" className="m-0 text-sm font-semibold tracking-wide text-fg flex items-center gap-2.5">
-            Endpoints más atacados
+            {t('table.topEndpoints.title')}
           </h2>
-          <p className="mt-0.5 mb-0 text-[11px] text-fg-dim">URIs por número de requests anómalos · 24h</p>
+          <p className="mt-0.5 mb-0 text-[11px] text-fg-dim">{t('table.topEndpoints.subtitle')}</p>
         </div>
       </header>
       <ul className="list-none m-0 p-0 flex flex-col gap-2.5">

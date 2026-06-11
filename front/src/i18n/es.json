@@ -1,0 +1,199 @@
+{
+  "common": {
+    "loading": "Cargando…",
+    "retry": "Reintentar",
+    "viewAll": "Ver todas",
+    "cancel": "Cancelar",
+    "save": "Guardar"
+  },
+  "auth": {
+    "login": {
+      "title": "Iniciar sesión",
+      "subtitle": "Ingresa tus credenciales para continuar",
+      "emailLabel": "Correo electrónico",
+      "emailPlaceholder": "admin@webshield.io",
+      "passwordLabel": "Contraseña",
+      "passwordPlaceholder": "••••••••",
+      "forgotPassword": "¿Olvidaste tu contraseña?",
+      "submit": "Iniciar sesión",
+      "submitting": "Verificando…",
+      "errorMissingFields": "Por favor completa todos los campos.",
+      "registerPrompt": "¿No tienes cuenta?",
+      "registerLink": "Crear cuenta nueva",
+      "footer": "webshield v0.1.0 · uso interno",
+      "togglePasswordShow": "Mostrar contraseña",
+      "togglePasswordHide": "Ocultar contraseña"
+    },
+    "register": {
+      "title": "Crear cuenta",
+      "subtitle": "Completa el formulario para registrarte",
+      "nameLabel": "Nombre completo",
+      "namePlaceholder": "Tu nombre",
+      "emailLabel": "Correo electrónico",
+      "emailPlaceholder": "tu@correo.com",
+      "passwordLabel": "Contraseña",
+      "passwordPlaceholder": "Mín. 8 caracteres",
+      "confirmLabel": "Confirmar contraseña",
+      "confirmPlaceholder": "Repite tu contraseña",
+      "submit": "Crear cuenta",
+      "submitting": "Creando cuenta…",
+      "errorMissingFields": "Por favor completa todos los campos.",
+      "errorMismatch": "Las contraseñas no coinciden.",
+      "errorTooShort": "La contraseña debe tener al menos 8 caracteres.",
+      "loginPrompt": "¿Ya tienes cuenta?",
+      "loginLink": "Iniciar sesión"
+    }
+  },
+  "topbar": {
+    "brandTagline": "Inspección de peticiones con IA",
+    "status": "WebShield activo",
+    "statusTitle": "WebShield en línea",
+    "themeToLight": "Cambiar a modo claro",
+    "themeToDark": "Cambiar a modo oscuro",
+    "themeTitleLight": "Modo claro",
+    "themeTitleDark": "Modo oscuro",
+    "languageAriaLabel": "Cambiar idioma"
+  },
+  "breadcrumb": {
+    "overview": "Vista general",
+    "loading": "Cargando…",
+    "liveData": "Datos en vivo"
+  },
+  "dashboard": {
+    "errorTitle": "No se pudo conectar con la base de datos.",
+    "errorDetail": "Asegúrate de que la base de datos esté corriendo y el API en el puerto 3001."
+  },
+  "kpi": {
+    "totalRequests": "Total de peticiones",
+    "blocked": "Bloqueadas",
+    "blockRate": "Tasa de bloqueo",
+    "topAttackType": "Tipo de ataque principal",
+    "latency": "Latencia",
+    "uniqueAttackers": "Atacantes únicos",
+    "period": {
+      "vsYesterday": "vs ayer",
+      "h24": "24h",
+      "rollingAvg": "media móvil"
+    }
+  },
+  "chart": {
+    "trafficTitle": "Tráfico · 24h",
+    "trafficSubtitle": "Peticiones por hora, válidas vs anómalas (clasificación del inspector).",
+    "legendValid": "Válida",
+    "legendAnomalous": "Anómala",
+    "attackTitle": "Distribución de ataques",
+    "attackSubtitle": "% de bloqueos por categoría · 24h",
+    "attackEmpty": "Sin bloqueos en las últimas 24h"
+  },
+  "table": {
+    "topIps": {
+      "title": "IPs atacantes principales",
+      "subtitle": "IPs con mayor volumen anómalo · 24h",
+      "empty": "Sin IPs registradas en las últimas 24h",
+      "ip": "IP",
+      "country": "País",
+      "total": "Total",
+      "anomalousPct": "% anom",
+      "lastSeen": "Última",
+      "status": "Estado",
+      "blocked": "BLOQUEADA",
+      "watchlist": "VIGILADA",
+      "allowed": "PERMITIDA"
+    },
+    "topEndpoints": {
+      "title": "Endpoints más atacados",
+      "subtitle": "URIs por número de peticiones anómalas · 24h",
+      "empty": "Sin datos en las últimas 24h"
+    }
+  },
+  "modelHealth": {
+    "title": "Salud del modelo",
+    "subtitle": "Random Forest + reglas OWASP CRS",
+    "predictionsPerSecond": "Predicciones/seg",
+    "rollingAccuracy": "Accuracy (60 min)",
+    "drift": "Drift score",
+    "lowerIsBetter": "menor = mejor",
+    "histogramTitle": "Distribución de confianza",
+    "histogramValid": "válido",
+    "histogramUncertain": "incierto",
+    "histogramAnomalous": "anómalo",
+    "statusHealthy": "HEALTHY",
+    "statusDegraded": "DEGRADED",
+    "statusCritical": "CRITICAL"
+  },
+  "live": {
+    "title": "Eventos en vivo",
+    "subtitle": "Stream de peticiones inspeccionadas — click para inspeccionar",
+    "filtersAriaLabel": "Filtros del stream",
+    "filterAll": "Todas",
+    "filterAnomalous": "Anómalas",
+    "filterBlocked": "Bloqueadas",
+    "pause": "⏸ Pausar",
+    "resume": "▶ Reanudar",
+    "pausedOverlay": "Stream pausado · nuevos eventos en cola",
+    "live": "en vivo",
+    "paused": "pausado",
+    "col": {
+      "time": "Tiempo",
+      "ip": "IP",
+      "method": "Método",
+      "uri": "URI",
+      "verdict": "Veredicto",
+      "score": "Score",
+      "action": "Acción",
+      "type": "Tipo",
+      "rule": "Regla"
+    },
+    "verdict": {
+      "valid": "Válida",
+      "anomalous": "Anómala"
+    },
+    "action": {
+      "blocked": "BLOQUEADA",
+      "allowed": "PERMITIDA",
+      "flagged": "MARCADA"
+    }
+  },
+  "drawer": {
+    "tabRequest": "Petición",
+    "tabModel": "Modelo",
+    "tabTriage": "Triage",
+    "event": "Evento",
+    "close": "Cerrar",
+    "summary": "Resumen",
+    "timestamp": "Timestamp",
+    "sourceIp": "IP origen",
+    "method": "Método",
+    "uri": "URI",
+    "headers": "Headers",
+    "body": "Body",
+    "score": "score",
+    "validIntro": "Petición clasificada como <strong>válida</strong> (score {{score}}).",
+    "validDetail": "No se activó ninguna regla ni el modelo ML.",
+    "decision": "Decisión",
+    "decisionRules": "Reglas determinísticas",
+    "decisionRuleTriggered": "Regla disparada:",
+    "decisionMl": "Modelo ML",
+    "decisionScoreLine": "Score: {{score}} · clase: <strong>anómala</strong>",
+    "decisionAction": "Acción",
+    "attackType": "Tipo de ataque inferido",
+    "severityTitle": "Severidad del tipo de ataque (1-5)",
+    "severityShort": "SEV {{value}}/5",
+    "featuresTitle": "Contribución de features (top 5)",
+    "featuresHelp": "Aporte de cada feature al score final. Ayuda al analista a entender por qué el modelo clasificó la petición como anómala.",
+    "triage": {
+      "markEvent": "Marcar evento",
+      "tp": "True Positive",
+      "tpHelp": "Confirmar ataque real",
+      "fp": "False Positive",
+      "fpHelp": "Era tráfico legítimo",
+      "escalate": "Escalar",
+      "escalateHelp": "Requiere revisión admin",
+      "severity": "Severidad ({{value}}/5)",
+      "comment": "Comentario",
+      "commentPlaceholder": "Notas para el equipo (queda en el audit log)…",
+      "viewIpEvents": "Ver eventos de {{ip}}",
+      "save": "Guardar triage"
+    }
+  }
+}

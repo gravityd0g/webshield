@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import AccessibilityToggles from '../../components/AccessibilityToggles'
 
 function ShieldIcon() {
   return (
@@ -53,6 +55,7 @@ function EyeIcon({ off }) {
 }
 
 export default function Register({ onRegistered, onGoToLogin }) {
+  const { t } = useTranslation()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -67,15 +70,15 @@ export default function Register({ onRegistered, onGoToLogin }) {
     setError('')
 
     if (!name.trim() || !email.trim() || !password.trim() || !confirm.trim()) {
-      setError('Por favor completa todos los campos.')
+      setError(t('auth.register.errorMissingFields'))
       return
     }
     if (password !== confirm) {
-      setError('Las contraseñas no coinciden.')
+      setError(t('auth.register.errorMismatch'))
       return
     }
     if (password.length < 8) {
-      setError('La contraseña debe tener al menos 8 caracteres.')
+      setError(t('auth.register.errorTooShort'))
       return
     }
 
@@ -92,7 +95,6 @@ export default function Register({ onRegistered, onGoToLogin }) {
     >
       <div className="w-full max-w-[400px] px-4 flex flex-col gap-6">
 
-        {/* Brand */}
         <div className="flex flex-col items-center gap-3">
           <div
             className="w-14 h-14 grid place-items-center bg-gradient-to-br from-slate-800 to-[#0b1220] border border-border-strong rounded-2xl text-cyan shadow-[0_0_0_1px_rgb(94_234_212/0.08),inset_0_1px_0_rgb(255_255_255/0.04),0_8px_32px_rgb(0_0_0/0.5)]"
@@ -102,26 +104,24 @@ export default function Register({ onRegistered, onGoToLogin }) {
           </div>
           <div className="flex flex-col items-center leading-tight gap-1">
             <strong className="text-[22px] tracking-wide text-fg">WebShield</strong>
-            <span className="text-[11px] text-fg-dim uppercase tracking-widest">Security Operations Center</span>
+            <span className="text-[11px] text-fg-dim uppercase tracking-widest">{t('topbar.brandTagline')}</span>
           </div>
         </div>
 
-        {/* Card */}
         <div
           className="flex flex-col gap-5 p-7 bg-gradient-to-b from-bg-2 to-bg-1 border border-border rounded-2xl shadow-[0_1px_0_rgb(255_255_255/0.03)_inset,0_8px_32px_rgb(0_0_0/0.4)]"
           role="main"
         >
           <div className="flex flex-col gap-1">
-            <h1 className="m-0 text-[17px] font-semibold text-fg">Crear cuenta</h1>
-            <p className="m-0 text-[13px] text-fg-muted">Completa el formulario para registrarte</p>
+            <h1 className="m-0 text-[17px] font-semibold text-fg">{t('auth.register.title')}</h1>
+            <p className="m-0 text-[13px] text-fg-muted">{t('auth.register.subtitle')}</p>
           </div>
 
           <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
 
-            {/* Name field */}
             <div className="flex flex-col gap-1.5">
               <label htmlFor="name" className="text-[12px] font-medium text-fg-muted uppercase tracking-wide">
-                Nombre completo
+                {t('auth.register.nameLabel')}
               </label>
               <div className="flex items-center gap-2.5 px-3 py-2.5 bg-bg-3 border border-border rounded-[10px] text-fg-muted transition-[border-color,background] duration-120 focus-within:border-blue focus-within:bg-bg-2">
                 <UserIcon />
@@ -129,7 +129,7 @@ export default function Register({ onRegistered, onGoToLogin }) {
                   id="name"
                   type="text"
                   autoComplete="name"
-                  placeholder="Tu nombre"
+                  placeholder={t('auth.register.namePlaceholder')}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="flex-1 bg-transparent border-0 text-fg text-[13px] outline-0 placeholder:text-fg-dim"
@@ -137,10 +137,9 @@ export default function Register({ onRegistered, onGoToLogin }) {
               </div>
             </div>
 
-            {/* Email field */}
             <div className="flex flex-col gap-1.5">
               <label htmlFor="reg-email" className="text-[12px] font-medium text-fg-muted uppercase tracking-wide">
-                Correo electrónico
+                {t('auth.register.emailLabel')}
               </label>
               <div className="flex items-center gap-2.5 px-3 py-2.5 bg-bg-3 border border-border rounded-[10px] text-fg-muted transition-[border-color,background] duration-120 focus-within:border-blue focus-within:bg-bg-2">
                 <MailIcon />
@@ -148,7 +147,7 @@ export default function Register({ onRegistered, onGoToLogin }) {
                   id="reg-email"
                   type="email"
                   autoComplete="email"
-                  placeholder="tu@correo.com"
+                  placeholder={t('auth.register.emailPlaceholder')}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="flex-1 bg-transparent border-0 text-fg text-[13px] outline-0 placeholder:text-fg-dim"
@@ -156,10 +155,9 @@ export default function Register({ onRegistered, onGoToLogin }) {
               </div>
             </div>
 
-            {/* Password field */}
             <div className="flex flex-col gap-1.5">
               <label htmlFor="reg-password" className="text-[12px] font-medium text-fg-muted uppercase tracking-wide">
-                Contraseña
+                {t('auth.register.passwordLabel')}
               </label>
               <div className="flex items-center gap-2.5 px-3 py-2.5 bg-bg-3 border border-border rounded-[10px] text-fg-muted transition-[border-color,background] duration-120 focus-within:border-blue focus-within:bg-bg-2">
                 <LockIcon />
@@ -167,7 +165,7 @@ export default function Register({ onRegistered, onGoToLogin }) {
                   id="reg-password"
                   type={showPassword ? 'text' : 'password'}
                   autoComplete="new-password"
-                  placeholder="Mín. 8 caracteres"
+                  placeholder={t('auth.register.passwordPlaceholder')}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="flex-1 bg-transparent border-0 text-fg text-[13px] outline-0 placeholder:text-fg-dim"
@@ -176,17 +174,16 @@ export default function Register({ onRegistered, onGoToLogin }) {
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
                   className="border-0 bg-transparent cursor-pointer p-0 text-fg-dim hover:text-fg-muted transition-colors duration-100"
-                  aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                  aria-label={showPassword ? t('auth.login.togglePasswordHide') : t('auth.login.togglePasswordShow')}
                 >
                   <EyeIcon off={showPassword} />
                 </button>
               </div>
             </div>
 
-            {/* Confirm password field */}
             <div className="flex flex-col gap-1.5">
               <label htmlFor="reg-confirm" className="text-[12px] font-medium text-fg-muted uppercase tracking-wide">
-                Confirmar contraseña
+                {t('auth.register.confirmLabel')}
               </label>
               <div className="flex items-center gap-2.5 px-3 py-2.5 bg-bg-3 border border-border rounded-[10px] text-fg-muted transition-[border-color,background] duration-120 focus-within:border-blue focus-within:bg-bg-2">
                 <LockIcon />
@@ -194,7 +191,7 @@ export default function Register({ onRegistered, onGoToLogin }) {
                   id="reg-confirm"
                   type={showConfirm ? 'text' : 'password'}
                   autoComplete="new-password"
-                  placeholder="Repite tu contraseña"
+                  placeholder={t('auth.register.confirmPlaceholder')}
                   value={confirm}
                   onChange={(e) => setConfirm(e.target.value)}
                   className="flex-1 bg-transparent border-0 text-fg text-[13px] outline-0 placeholder:text-fg-dim"
@@ -203,14 +200,13 @@ export default function Register({ onRegistered, onGoToLogin }) {
                   type="button"
                   onClick={() => setShowConfirm((v) => !v)}
                   className="border-0 bg-transparent cursor-pointer p-0 text-fg-dim hover:text-fg-muted transition-colors duration-100"
-                  aria-label={showConfirm ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                  aria-label={showConfirm ? t('auth.login.togglePasswordHide') : t('auth.login.togglePasswordShow')}
                 >
                   <EyeIcon off={showConfirm} />
                 </button>
               </div>
             </div>
 
-            {/* Error message */}
             {error && (
               <div
                 role="alert"
@@ -223,7 +219,6 @@ export default function Register({ onRegistered, onGoToLogin }) {
               </div>
             )}
 
-            {/* Submit */}
             <button
               type="submit"
               disabled={loading}
@@ -234,31 +229,31 @@ export default function Register({ onRegistered, onGoToLogin }) {
                   <svg className="animate-spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
                     <path d="M21 12a9 9 0 1 1-6-8.5" />
                   </svg>
-                  Creando cuenta…
+                  {t('auth.register.submitting')}
                 </>
               ) : (
-                'Crear cuenta'
+                t('auth.register.submit')
               )}
             </button>
           </form>
         </div>
 
-        {/* Login link */}
         <p className="text-center text-[12px] text-fg-dim">
-          ¿Ya tienes cuenta?{' '}
+          {t('auth.register.loginPrompt')}{' '}
           <button
             type="button"
             onClick={onGoToLogin}
             className="text-blue border-0 bg-transparent cursor-pointer p-0 hover:text-fg transition-colors duration-100 font-medium"
           >
-            Iniciar sesión
+            {t('auth.register.loginLink')}
           </button>
         </p>
 
-        {/* Footer */}
         <p className="text-center text-[11px] text-fg-dim font-mono">
-          webshield v0.1.0 · uso interno
+          {t('auth.login.footer')}
         </p>
+
+        <AccessibilityToggles className="mt-1" />
       </div>
     </div>
   )

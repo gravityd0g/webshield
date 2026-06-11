@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next'
+
 const SIZE = 220
 const RADIUS = 86
 const STROKE = 28
@@ -17,6 +19,7 @@ function arc(start, end) {
 }
 
 function EmptyDonut() {
+  const { t } = useTranslation()
   return (
     <section
       className="bg-gradient-to-b from-bg-2 to-bg-1 border border-border rounded-[14px] px-[18px] pt-[18px] pb-4 shadow-panel flex flex-col gap-3.5 min-w-0 min-h-80"
@@ -25,9 +28,9 @@ function EmptyDonut() {
       <header className="flex items-start justify-between gap-4">
         <div>
           <h2 id="attacks-title" className="m-0 text-sm font-semibold tracking-wide text-fg">
-            Distribución de ataques
+            {t('chart.attackTitle')}
           </h2>
-          <p className="mt-0.5 mb-0 text-[11px] text-fg-dim">Sin bloqueos en las últimas 24h</p>
+          <p className="mt-0.5 mb-0 text-[11px] text-fg-dim">{t('chart.attackEmpty')}</p>
         </div>
       </header>
     </section>
@@ -35,6 +38,7 @@ function EmptyDonut() {
 }
 
 export default function AttackDonut({ data }) {
+  const { t } = useTranslation()
   if (!data?.length) return <EmptyDonut />
   const total = data.reduce((s, d) => s + d.value, 0)
   if (total <= 0) return <EmptyDonut />
@@ -56,13 +60,13 @@ export default function AttackDonut({ data }) {
       <header className="flex items-start justify-between gap-4">
         <div>
           <h2 id="attacks-title" className="m-0 text-sm font-semibold tracking-wide text-fg flex items-center gap-2.5">
-            Distribución de ataques
+            {t('chart.attackTitle')}
           </h2>
-          <p className="mt-0.5 mb-0 text-[11px] text-fg-dim">% de bloqueos por categoría · 24h</p>
+          <p className="mt-0.5 mb-0 text-[11px] text-fg-dim">{t('chart.attackSubtitle')}</p>
         </div>
       </header>
       <div className="flex flex-col items-center gap-4">
-        <svg viewBox={`0 0 ${SIZE} ${SIZE}`} className="w-[180px] h-[180px] shrink-0" role="img" aria-label="Donut de tipos de ataque">
+        <svg viewBox={`0 0 ${SIZE} ${SIZE}`} className="w-[180px] h-[180px] shrink-0" role="img" aria-label={t('chart.attackTitle')}>
           <circle cx={CX} cy={CY} r={RADIUS} fill="none" stroke="var(--color-border)" strokeWidth={STROKE} />
           {segments.map((s) => (
             <path

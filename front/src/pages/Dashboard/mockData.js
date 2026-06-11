@@ -2,74 +2,76 @@
 // DB nueva, useDashboardData consume estas constantes (USE_MOCK = true).
 // Cuando el backend devuelva el mismo shape, el archivo queda para tests/dev.
 //
+// Los strings traducibles van como `labelKey` / `periodKey` (i18n).
+// Los `delta` son strings de demo neutrales — cuando el backend conecte,
+// devolverá su propio formato localizado.
+//
 // Los eventos siguen el dataset ECML/PKDD 2007 (SQLi, XSS, path traversal,
 // encoded payloads, admin probing).
 
 export const kpis = [
   {
     id: 'total',
-    label: 'Total requests',
+    labelKey: 'kpi.totalRequests',
     value: 12394,
     delta: '+12.4%',
     deltaDirection: 'up',
-    period: 'vs ayer',
+    periodKey: 'kpi.period.vsYesterday',
     sparkline: [820, 940, 1100, 1050, 980, 1240, 1310, 1450, 1380, 1290, 1410, 1530],
     accent: 'cyan',
   },
   {
     id: 'blocked',
-    label: 'Bloqueados',
+    labelKey: 'kpi.blocked',
     value: 1832,
     delta: '+8.1%',
     deltaDirection: 'up',
-    period: 'vs ayer',
+    periodKey: 'kpi.period.vsYesterday',
     sparkline: [110, 132, 158, 145, 142, 188, 201, 215, 198, 184, 207, 234],
     accent: 'rose',
   },
   {
     id: 'rate',
-    label: 'Block rate',
+    labelKey: 'kpi.blockRate',
     value: '14.7%',
     delta: '-0.6 pp',
     deltaDirection: 'down',
-    period: 'vs ayer',
+    periodKey: 'kpi.period.vsYesterday',
     sparkline: [13.4, 14.0, 14.4, 13.8, 14.5, 15.2, 15.4, 14.8, 14.4, 14.2, 14.7, 15.3],
     accent: 'amber',
   },
   {
     id: 'top-attack',
-    label: 'Top attack type',
+    labelKey: 'kpi.topAttackType',
     value: 'SQLi',
-    delta: '41% de bloqueos',
+    delta: '41%',
     deltaDirection: 'flat',
-    period: '24h',
+    periodKey: 'kpi.period.h24',
     sparkline: null,
     accent: 'violet',
   },
   {
     id: 'latency',
-    label: 'Latencia WAF',
+    labelKey: 'kpi.latency',
     value: '23 ms',
     delta: 'p99: 89 ms',
     deltaDirection: 'flat',
-    period: 'media móvil',
+    periodKey: 'kpi.period.rollingAvg',
     sparkline: [20, 22, 24, 21, 25, 28, 31, 27, 24, 22, 23, 25],
     accent: 'blue',
   },
   {
     id: 'attackers',
-    label: 'Attackers únicos',
+    labelKey: 'kpi.uniqueAttackers',
     value: 47,
-    delta: '+5 nuevos',
+    delta: '+5',
     deltaDirection: 'up',
-    period: '24h',
+    periodKey: 'kpi.period.h24',
     sparkline: [38, 39, 40, 41, 41, 42, 43, 44, 45, 45, 46, 47],
     accent: 'rose',
   },
 ]
 
-// Timeline de tráfico — 24 horas, granularidad por hora.
-// Valid vs Anomalous stacked.
 export const timeline = {
   buckets: Array.from({ length: 24 }, (_, h) => {
     const hour = (new Date().getHours() - 23 + h + 24) % 24
@@ -83,13 +85,15 @@ export const timeline = {
   }),
 }
 
+// Labels de attackTypes vienen de DB attack_type_catalog.display_name (texto técnico,
+// usamos términos en inglés que funcionan en ambos idiomas).
 export const attackTypes = [
   { id: 'sqli', label: 'SQL Injection', value: 41, color: '#f43f5e', severity: 5 },
   { id: 'xss', label: 'Cross-Site Scripting', value: 23, color: '#fb7185', severity: 4 },
   { id: 'traversal', label: 'Path Traversal', value: 14, color: '#fbbf24', severity: 4 },
   { id: 'encoded', label: 'Payload Encoded', value: 11, color: '#a78bfa', severity: 3 },
   { id: 'admin', label: 'Admin Probing', value: 8, color: '#60a5fa', severity: 3 },
-  { id: 'other', label: 'Otros', value: 3, color: '#8b94ad', severity: 2 },
+  { id: 'other', label: 'Other', value: 3, color: '#8b94ad', severity: 2 },
 ]
 
 export const topIPs = [
@@ -114,7 +118,7 @@ export const topEndpoints = [
 export const modelHealth = {
   predictionsPerSecond: 142,
   rollingAccuracy: 0.918,
-  drift: 0.07, // 0-1, mientras menos mejor
+  drift: 0.07,
   confidenceHistogram: [
     { bin: '0.0-0.1', count: 4820 },
     { bin: '0.1-0.2', count: 3210 },
@@ -130,7 +134,6 @@ export const modelHealth = {
   status: 'healthy',
 }
 
-// Eventos recientes — patrones tomados del dataset ECML/PKDD 2007.
 export const recentEvents = [
   {
     id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
@@ -366,4 +369,3 @@ export const recentEvents = [
     features: [],
   },
 ]
-
