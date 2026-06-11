@@ -4,7 +4,7 @@ import { kpis, timeline, attackTypes, topIPs, topEndpoints, modelHealth, recentE
 
 // Backend aún no conectado a la DB nueva (issue #34). Cuando esté listo,
 // poner USE_MOCK = false para que el front llame al API real.
-const USE_MOCK = true
+const USE_MOCK = false
 const MOCK_DATA = { kpis, timeline, attackTypes, topIPs, topEndpoints, modelHealth, recentEvents }
 
 export function useDashboardData(pollIntervalMs = 30000) {
