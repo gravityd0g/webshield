@@ -103,7 +103,7 @@
     const cats = await api('/api/categorias');
     const sel = document.getElementById('categoria_id');
     cats.forEach(c => sel.insertAdjacentHTML('beforeend', `<option value="${c.id}">${c.icono} ${c.nombre}</option>`));
-    // Iniciar con 3 ingredientes y 3 pasos
+   
     for (let i = 0; i < 4; i++) addIng();
     for (let i = 0; i < 3; i++) addPaso();
   });
