@@ -1,173 +1,87 @@
 # WebShield
 
-WebShield es una plataforma de seguridad web que combina un **Web Application Firewall (WAF) impulsado por Machine Learning** con un **dashboard de monitoreo en tiempo real**. Detecta y bloquea amenazas como SQLi, XSS, path traversal y otros ataques OWASP, registrando cada evento en una base de datos para análisis posterior.
+WebShield es una plataforma de seguridad web que combina un **Web Application Firewall (WAF) impulsado por Machine Learning** con un **dashboard de monitoreo en tiempo real**. Detecta y bloquea amenazas como SQLi, XSS, path traversal, Log4Shell y otros ataques OWASP, registrando cada evento en una base de datos para análisis posterior.
 
 ---
 
 ## Arquitectura
 
 ```
-┌─────────────┐     ┌──────────────┐     ┌──────────────────┐
-│   Frontend  │────▶│  Backend API │────▶│   MySQL 8.4      │
-│  React/Vite │     │  Express.js  │     │  (webshield DB)  │
-│  :5173      │     │  :3001       │     │  :3306           │
-└─────────────┘     └──────────────┘     └──────────────────┘
-                                                  ▲
-┌─────────────┐     ┌──────────────┐             │
-│  App Demo   │────▶│     WAF      │─────────────┘
-│ recetas-app │     │  Python/ML   │  (registra eventos)
-│  :3000      │     │  :8080       │
-└─────────────┘     └──────────────┘
+                   ┌──────────────┐
+   Cliente ───▶    │  WAF (proxy) │ ──── POST /inspect ──▶ ┌────────┐
+                   │  Python      │ ◀─── decisión ──────── │ ML API │
+                   │  :8080 / 81  │                        │ :8000  │
+                   └──────┬───────┘                        └────────┘
+                          │ block(403)  /  forward + ingest async
+                          │
+                          ├──▶ App protegida (single_app / split_app)
+                          │
+                          └──▶ POST /api/ingest/events (Bearer)
+                                       │
+                                       ▼
+   ┌─────────────┐  ┌──────────────┐  ┌──────────────────┐
+   │   Frontend  │─▶│  Backend API │─▶│   MySQL 8.4      │
+   │  React+Vite │  │  Express     │  │  (webshield DB)  │
+   │  nginx :443 │  │  :3001       │  │  :3306           │
+   └─────────────┘  └──────────────┘  └──────────────────┘
 ```
 
 | Componente | Tecnología | Puerto |
 |---|---|---|
-| Frontend | React 19 + Vite + Tailwind CSS v4 | 5173 |
+| Frontend | React 19 + Vite + Tailwind CSS v4 | nginx :443 (prod) / Vite :5173 (dev) |
 | Backend API | Express.js 4 (ES Modules) | 3001 |
-| WAF | Python 3 + scikit-learn (Random Forest) | 8080 |
-| App Demo | Express.js 4 (CommonJS) + JWT | 3000 |
+| WAF | FastAPI + httpx + nginx (port-based routing) | uvicorn 8080 (interno) + nginx 8081/8082 |
+| ML API | FastAPI + scikit-learn (Random Forest) | 8000 |
 | Base de datos | MySQL 8.4 | 3306 |
+| App demo (opcional) | `recetas-app/` — Express + JWT | 3000 |
 
 ---
 
-## Requisitos previos
+## Estructura del repositorio
 
-- [Node.js](https://nodejs.org/) 18+
-- [Python](https://python.org/) 3.10+
-- [Docker](https://www.docker.com/) y Docker Compose
-- MySQL 8.4 (puede levantarse con Docker)
+```
+webshield/
+├── back/
+│   └── api-webshield/         API REST del dashboard (Express, ES Modules)
+│       ├── src/
+│       │   ├── routes/        auth, dashboard, ingest, model
+│       │   ├── services/      authService, dashboardService, ingestService, modelService
+│       │   ├── middleware/    auth (JWT cookie), bearerAuth (WAF→API), security
+│       │   └── db.js          pool MySQL2
+│       └── scripts/gen-cert.sh
+├── front/                     Dashboard React + Vite
+│   ├── src/pages/Dashboard/   tabla live + drawer + hooks de polling
+│   └── src/i18n/              traducciones en/es
+├── database/
+│   └── webshield.sql          esquema (3 tablas: request_events, request_http, users)
+├── machineLearning-api/       README de la ML API (código en webshield_full_port_deploy)
+├── waf_proxy/                 README del WAF (código en webshield_full_port_deploy)
+├── modelo/
+│   ├── training/              scripts de entrenamiento del Random Forest
+│   ├── exports/               modelos exportados (.joblib)
+│   └── client/                cliente de inferencia local
+├── recetas-app/               app demo opcional para que el WAF tenga algo que proteger
+├── scripts/                   utilidades (setup-db, gen-cert)
+├── Documentación/             notas de arquitectura del equipo
+├── docker-compose.yml         MySQL local para desarrollo
+└── README.md
+```
+
+> El código real del WAF y de la ML API que corre en producción vive en un repo aparte (`webshield_full_port_deploy`). Lo que está en `waf_proxy/` y `machineLearning-api/` son solo los READMEs de referencia.
 
 ---
 
-## Instalación y ejecución
+## Esquema de base de datos
 
-### 1. Base de datos (MySQL con Docker)
+3 tablas, todas con `ENGINE=InnoDB` y `utf8mb4`:
 
-```bash
-cd webshield
-docker-compose up -d mysql
-```
+| Tabla | Descripción |
+|---|---|
+| `request_events` | Una fila por petición inspeccionada. `event_id`, `detected_at`, `verdict` (`valid`/`anomalous`), `action` (`allowed`/`blocked`), `confidence_score`, `client_ip`, `latency_ms`, `model_version` |
+| `request_http` | Detalles HTTP del request (1:1 con `request_events`). Método, URI, query, body, cookie, user-agent, content-length, host-header, y `request_headers` como JSON con todos los headers |
+| `users` | Usuarios del dashboard. `email`, `password_hash` (bcrypt), `display_name`, timestamps |
 
-Esto levanta MySQL 8.4 en el puerto `3306`. Luego carga el esquema:
-
-```bash
-# Linux / macOS
-bash scripts/setup-db.sh
-
-# Windows (PowerShell)
-.\scripts\setup-db.ps1
-```
-
-O bien de forma manual:
-
-```sql
-mysql -u root -p < database/webshield.sql
-```
-
----
-
-### 2. Backend API
-
-```bash
-cd back/api-webshield
-npm install
-cp .env.example .env
-```
-
-Edita `.env` con tus credenciales:
-
-```env
-DB_HOST=localhost
-DB_PORT=3306
-DB_USER=root
-DB_PASSWORD=tu_password
-DB_NAME=webshield
-
-API_HOST=127.0.0.1
-API_PORT=3001
-ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
-```
-
-```bash
-npm run dev      # desarrollo
-npm start        # producción
-```
-
-Verifica: `GET http://localhost:3001/api/health`
-
----
-
-### 3. Frontend
-
-```bash
-cd front
-npm install
-```
-
-Crea `.env`:
-
-```env
-VITE_API_URL=http://localhost:3001
-```
-
-```bash
-npm run dev
-```
-
-Abre [http://localhost:5173](http://localhost:5173).
-
----
-
-### 4. WAF (Web Application Firewall)
-
-```bash
-cd waf
-python -m venv .venv
-source .venv/bin/activate        # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-```
-
-Crea `.env` en `waf/`:
-
-```env
-WAF_HOST=0.0.0.0
-WAF_PORT=8080
-BACKEND_URL=http://localhost:3000
-MODEL_PATH=../modelo/exports/webshield_rf_v1.joblib
-BLOCK_THRESHOLD=0.5
-DB_HOST=localhost
-DB_USER=root
-DB_PASSWORD=tu_password
-DB_NAME=webshield
-```
-
-```bash
-python app.py
-```
-
----
-
-### 5. App Demo — recetas-app (opcional)
-
-Aplicación de demostración que actúa como backend protegido por el WAF.
-
-```bash
-cd recetas-app
-npm install
-npm run dev    # puerto 3000
-```
-
----
-
-## Orden de arranque recomendado
-
-```
-1. docker-compose up -d mysql           ← Base de datos
-2. cd back/api-webshield && npm run dev ← Backend API
-3. cd front && npm run dev              ← Dashboard
-4. cd waf && python app.py              ← WAF (opcional)
-5. cd recetas-app && npm run dev        ← App demo (opcional)
-```
+El esquema completo está en `database/webshield.sql`.
 
 ---
 
@@ -177,8 +91,8 @@ El WAF usa un clasificador **Random Forest** con 42 features extraídas de cada 
 
 - **Modelo exportado**: `modelo/exports/webshield_rf_v1.joblib`
 - **Script de entrenamiento**: `modelo/training/train_classifier.py`
-- **Umbral de bloqueo**: configurable con `BLOCK_THRESHOLD` (default `0.5`)
-- **Salida**: binaria — `0` válido / `1` anomalía
+- **Umbral de clasificación**: configurable con `ANOMALY_THRESHOLD` (default `0.90`)
+- **Salida**: probabilidad de anomalía + label (`valid`/`anomalous`) + acción (`allow`/`block`)
 
 Categorías de ataque detectadas (alineadas con OWASP CRS):
 
@@ -203,47 +117,96 @@ Categorías de ataque detectadas (alineadas con OWASP CRS):
 
 ---
 
-## Estructura del proyecto
+## Requisitos previos
 
-```
-webshield/
-├── back/
-│   └── api-webshield/         # API REST (Express.js, ES Modules)
-│       ├── src/
-│       │   ├── index.js
-│       │   ├── routes/
-│       │   └── services/
-│       └── .env.example
-├── front/                     # Dashboard React + Vite
-│   ├── src/
-│   │   ├── pages/
-│   │   └── components/
-│   └── .env.example
-├── waf/                       # Proxy WAF (Python + scikit-learn)
-├── modelo/
-│   ├── training/              # Scripts de entrenamiento
-│   └── exports/               # Modelos exportados (.joblib)
-├── recetas-app/               # App demo protegida por el WAF
-├── database/
-│   ├── webshield.sql          # Esquema de base de datos
-│   └── DiagramaEntidadRelacion.png
-├── scripts/
-│   ├── setup-db.sh
-│   └── setup-db.ps1
-├── docker-compose.yml
-└── README.md
-```
+- [Node.js](https://nodejs.org/) 22+ (el `package.json` del backend está fijado a Node 22)
+- [Python](https://python.org/) 3.10+ (para WAF y ML API)
+- MySQL 8.4 — puede levantarse con el `docker-compose.yml` incluido
 
 ---
 
-## Esquema de base de datos
+## Instalación y ejecución (desarrollo local)
 
-| Tabla | Descripción |
-|---|---|
-| `attack_type_catalog` | Catálogo de tipos de ataque (SQLi, XSS, etc.) |
-| `request_events` | Eventos de seguridad con veredicto, acción y score de confianza |
-| `request_http` | Detalles HTTP de cada request (headers, método, URI, body) |
-| `request_ml_indicators` | Valores de features de ML por request |
+### 1. Base de datos
+
+Opción A — con Docker:
+```bash
+docker compose up -d mysql
+```
+Esto levanta MySQL 8.4 en `:3306`, root password `webshield`, y carga `database/webshield.sql` automáticamente al primer arranque.
+
+Opción B — MySQL nativo:
+```bash
+mysql -u root -p < database/webshield.sql
+```
+
+### 2. Backend API
+
+```bash
+cd back/api-webshield
+npm install
+cp .env.example .env
+```
+
+Edita `.env` con tus valores (ver "Variables de entorno" más abajo).
+
+```bash
+npm run dev      # node --watch
+npm start        # producción
+```
+
+Verifica: `curl http://localhost:3001/api/health` debe responder `{"backend":"healthy","db":"healthy"}`.
+
+### 3. Frontend
+
+```bash
+cd front
+npm install
+echo 'VITE_API_URL=https://localhost:3001' > .env
+npm run dev
+```
+
+Abre `https://localhost:5173`. El primer acceso pide aceptar el cert self-signed.
+
+### 4. WAF (opcional para dev)
+
+El código del WAF que corre en producción está en el repo `webshield_full_port_deploy/waf/`. Para desarrollo local puedes usarlo igual:
+
+```bash
+cd ../webshield_full_port_deploy/waf
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+
+# Edita env/waf.env con tus valores (ver waf_proxy/README.md)
+uvicorn app.main:app --host 127.0.0.1 --port 8080
+```
+
+Ver `waf_proxy/README.md` para detalle de env vars (`ML_API_URL`, `ML_API_TOKEN`, `WAF_ROUTES_JSON`, `WEBSHIELD_INGEST_*`, etc.).
+
+### 5. ML API (opcional para dev)
+
+```bash
+cd ../webshield_full_port_deploy/ml
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+
+MODEL_PATH=../../webshield/modelo/exports/webshield_rf_v1.joblib \
+  uvicorn app.main:app --host 127.0.0.1 --port 8000
+```
+
+Ver `machineLearning-api/README.md` para detalle.
+
+### 6. App demo — recetas-app (opcional)
+
+Sirve para que el WAF tenga un upstream que proteger. Solo si quieres ver el flujo end-to-end completo en local.
+
+```bash
+cd recetas-app
+npm install
+npm start    # :3000
+```
 
 ---
 
@@ -258,38 +221,49 @@ webshield/
 | `DB_USER` | Usuario de MySQL | — |
 | `DB_PASSWORD` | Contraseña de MySQL | — |
 | `DB_NAME` | Nombre de la base de datos | `webshield` |
-| `API_HOST` | Host donde escucha la API | `127.0.0.1` |
+| `API_HOST` | Interfaz donde escucha la API | `127.0.0.1` |
 | `API_PORT` | Puerto de la API | `3001` |
-| `ALLOWED_ORIGINS` | Orígenes CORS permitidos (coma-separados) | `http://localhost:5173` |
+| `TLS_CERT_PATH` | Ruta al cert TLS — activa HTTPS si existe | — |
+| `TLS_KEY_PATH` | Ruta a la key TLS | — |
+| `ALLOWED_ORIGINS` | Orígenes CORS permitidos (coma-separados) | `https://localhost:5173` |
+| `JWT_SECRET` | Secreto para firmar JWTs — obligatorio en producción | — |
+| `JWT_EXPIRES_IN` | Duración del token | `7d` |
+| `COOKIE_NAME` | Nombre de la cookie de sesión | `webshield_session` |
+| `COOKIE_SAMESITE` | Atributo `SameSite` de la cookie | `Strict` |
+| `MODEL_API_URL` | URL base de la ML API (para `/api/model/*`) | — |
+| `MODEL_API_KEY` | Bearer token con la ML API | — |
+| `MODEL_API_TIMEOUT_MS` | Timeout de llamadas a la ML API (ms) | `5000` |
+| `INGEST_API_TOKEN` | Bearer que el WAF usa para `POST /api/ingest/events` | — |
 
 ### Frontend (`front/.env`)
 
 | Variable | Descripción | Default |
 |---|---|---|
-| `VITE_API_URL` | URL base del backend API | `http://localhost:3001` |
+| `VITE_API_URL` | URL base del backend API. Dejar vacío en producción para usar URLs relativas (cuando nginx termina TLS y proxy-passea `/api`) | `http://localhost:3001` |
 
-### WAF (`waf/.env`)
+### WAF y ML API
 
-| Variable | Descripción | Default |
-|---|---|---|
-| `WAF_HOST` | Host donde escucha el WAF | `0.0.0.0` |
-| `WAF_PORT` | Puerto del WAF | `8080` |
-| `BACKEND_URL` | URL del backend protegido | `http://localhost:3000` |
-| `MODEL_PATH` | Ruta al modelo `.joblib` | `./waf_model.pkl` |
-| `BLOCK_THRESHOLD` | Umbral de bloqueo (0.0–1.0) | `0.5` |
-| `DB_HOST` | Host de MySQL para logging | `db` |
-| `DB_PORT` | Puerto de MySQL | `3306` |
-| `DB_USER` | Usuario de MySQL | `webshield` |
-| `DB_PASSWORD` | Contraseña de MySQL | — |
-| `DB_NAME` | Nombre de la base de datos | `webshield` |
+Documentadas en sus READMEs respectivos:
+- [`waf_proxy/README.md`](waf_proxy/README.md) — env vars del WAF (`ML_API_URL`, `FAIL_MODE`, `WAF_ROUTES_JSON`, `WEBSHIELD_INGEST_*`)
+- [`machineLearning-api/README.md`](machineLearning-api/README.md) — env vars del ML (`MODEL_PATH`, `ANOMALY_THRESHOLD`, `ML_API_TOKEN`)
 
 ---
 
-## Convenciones del repositorio
+## Endpoints principales del backend
 
-- Las branches nuevas se crean a partir de `develop`.
-- Los PRs se dirigen a `develop`; eventualmente se hace merge a `main`.
-- Las branches se nombran a partir del issue correspondiente.
+| Método | Ruta | Auth | Descripción |
+|---|---|---|---|
+| `GET` | `/api/health` | — | Estado del backend y conexión a MySQL |
+| `POST` | `/api/auth/register` | — | Registra un usuario |
+| `POST` | `/api/auth/login` | — | Login + cookie JWT |
+| `POST` | `/api/auth/logout` | — | Borra la cookie |
+| `GET` | `/api/auth/me` | cookie | Usuario actual |
+| `GET` | `/api/dashboard` | cookie | Últimos 200 eventos para la tabla live |
+| `POST` | `/api/ingest/events` | Bearer | El WAF mete cada evento aquí (idempotente por `event_id`) |
+| `GET` | `/api/model/health` | cookie | Proxy al `/health` de la ML API |
+| `POST` | `/api/model/inspect` | cookie | Proxy al `/inspect` de la ML API (consulta directa) |
+
+Detalles del payload de `/api/ingest/events` y comportamiento idempotente en [`back/api-webshield/README.md`](back/api-webshield/README.md).
 
 ---
 
@@ -361,3 +335,18 @@ Las reglas están en el SG attachado a cada VM. **Cambios en los SGs deben coord
 | MySQL passwords | `root` y `webshield@172.16.67.144/32` | Solo db-DEN; backend-DEN usa el del user app |
 
 Si se rota un token compartido, debe actualizarse en ambos lados simultáneamente para no perder eventos.
+
+---
+
+## Documentación por componente
+
+- [`back/api-webshield/README.md`](back/api-webshield/README.md) — endpoints, auth, validación de ingest, env vars
+- [`front/README.md`](front/README.md) — stack, scripts de Vite, i18n, theming
+- [`waf_proxy/README.md`](waf_proxy/README.md) — routing por app, headers de proxy, ingest, despliegue port-based
+- [`machineLearning-api/README.md`](machineLearning-api/README.md) — features, endpoints, hot-reload del modelo
+
+---
+
+## Licencia
+
+Ver [LICENSE](LICENSE).
