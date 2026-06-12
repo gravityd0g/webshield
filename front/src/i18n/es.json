@@ -1,0 +1,112 @@
+{
+  "common": {
+    "loading": "Cargando…",
+    "retry": "Reintentar",
+    "viewAll": "Ver todas",
+    "cancel": "Cancelar",
+    "save": "Guardar"
+  },
+  "auth": {
+    "login": {
+      "title": "Iniciar sesión",
+      "subtitle": "Ingresa tus credenciales para continuar",
+      "emailLabel": "Correo electrónico",
+      "emailPlaceholder": "admin@webshield.io",
+      "passwordLabel": "Contraseña",
+      "passwordPlaceholder": "••••••••",
+      "forgotPassword": "¿Olvidaste tu contraseña?",
+      "submit": "Iniciar sesión",
+      "submitting": "Verificando…",
+      "errorMissingFields": "Por favor completa todos los campos.",
+      "registerPrompt": "¿No tienes cuenta?",
+      "registerLink": "Crear cuenta nueva",
+      "footer": "webshield v0.1.0 · uso interno",
+      "togglePasswordShow": "Mostrar contraseña",
+      "togglePasswordHide": "Ocultar contraseña"
+    },
+    "register": {
+      "title": "Crear cuenta",
+      "subtitle": "Completa el formulario para registrarte",
+      "nameLabel": "Nombre completo",
+      "namePlaceholder": "Tu nombre",
+      "emailLabel": "Correo electrónico",
+      "emailPlaceholder": "tu@correo.com",
+      "passwordLabel": "Contraseña",
+      "passwordPlaceholder": "Mín. 8 caracteres",
+      "confirmLabel": "Confirmar contraseña",
+      "confirmPlaceholder": "Repite tu contraseña",
+      "submit": "Crear cuenta",
+      "submitting": "Creando cuenta…",
+      "errorMissingFields": "Por favor completa todos los campos.",
+      "errorMismatch": "Las contraseñas no coinciden.",
+      "errorTooShort": "La contraseña debe tener al menos 8 caracteres.",
+      "loginPrompt": "¿Ya tienes cuenta?",
+      "loginLink": "Iniciar sesión"
+    }
+  },
+  "topbar": {
+    "brandTagline": "Inspección de peticiones con IA",
+    "status": "WebShield activo",
+    "statusTitle": "WebShield en línea",
+    "themeToLight": "Cambiar a modo claro",
+    "themeToDark": "Cambiar a modo oscuro",
+    "themeTitleLight": "Modo claro",
+    "themeTitleDark": "Modo oscuro",
+    "languageAriaLabel": "Cambiar idioma",
+    "logout": "Cerrar sesión"
+  },
+  "breadcrumb": {
+    "overview": "Vista general",
+    "loading": "Cargando…",
+    "liveData": "Datos en vivo"
+  },
+  "dashboard": {
+    "errorTitle": "No se pudo conectar con la base de datos.",
+    "errorDetail": "Asegúrate de que la base de datos esté corriendo y el API en el puerto 3001."
+  },
+  "live": {
+    "title": "Eventos en vivo",
+    "subtitle": "Stream de peticiones inspeccionadas — click para inspeccionar",
+    "filtersAriaLabel": "Filtros del stream",
+    "filterAll": "Todas",
+    "filterAnomalous": "Anómalas",
+    "filterBlocked": "Bloqueadas",
+    "pause": "⏸ Pausar",
+    "resume": "▶ Reanudar",
+    "pausedOverlay": "Stream pausado · nuevos eventos en cola",
+    "live": "en vivo",
+    "paused": "pausado",
+    "col": {
+      "time": "Tiempo",
+      "ip": "IP",
+      "method": "Método",
+      "uri": "URI",
+      "verdict": "Veredicto",
+      "score": "Score",
+      "action": "Acción"
+    },
+    "verdict": {
+      "valid": "Válida",
+      "anomalous": "Anómala"
+    },
+    "action": {
+      "blocked": "BLOQUEADA",
+      "allowed": "PERMITIDA"
+    }
+  },
+  "drawer": {
+    "event": "Evento",
+    "close": "Cerrar",
+    "summary": "Resumen",
+    "timestamp": "Timestamp",
+    "sourceIp": "IP origen",
+    "method": "Método",
+    "uri": "URI",
+    "verdict": "Veredicto",
+    "action": "Acción",
+    "score": "score",
+    "headers": "Headers",
+    "noHeaders": "Sin headers capturados.",
+    "body": "Body"
+  }
+}

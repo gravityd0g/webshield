@@ -1,0 +1,89 @@
+@import "tailwindcss";
+
+@theme {
+  /* Static design tokens — accent colors, typography, animations (same en light/dark) */
+  --color-cyan: #5eead4;
+  --color-rose: #f43f5e;
+  --color-amber: #fbbf24;
+  --color-blue: #60a5fa;
+  --color-violet: #a78bfa;
+  --color-green: #4ade80;
+  --font-mono: ui-monospace, "JetBrains Mono", "SF Mono", Consolas, monospace;
+  --animate-pulse-status: pulse-status 2s ease-in-out infinite;
+  --animate-pulse-rose: pulse-rose 1.2s ease-in-out infinite;
+  --animate-fade-in: fade-in 120ms ease-out;
+  --animate-slide-in: slide-in 180ms cubic-bezier(0.2, 0.7, 0.3, 1);
+
+  /* Themeable tokens — default values for dark theme */
+  --color-bg-0: #070b14;
+  --color-bg-1: #0a0f1d;
+  --color-bg-2: #0f1626;
+  --color-bg-3: #131b30;
+  --color-surface: #111a2e;
+  --color-surface-hover: #16213a;
+  --color-border: #1c2438;
+  --color-border-strong: #243049;
+  --color-fg: #e8eaf2;
+  --color-fg-muted: #8b94ad;
+  --color-fg-dim: #5c6480;
+  --color-cyan-soft: rgb(94 234 212 / 0.12);
+  --color-rose-soft: rgb(244 63 94 / 0.14);
+  --color-amber-soft: rgb(251 191 36 / 0.14);
+  --color-blue-soft: rgb(96 165 250 / 0.14);
+  --color-violet-soft: rgb(167 139 250 / 0.14);
+  --shadow-panel: 0 1px 0 rgb(255 255 255 / 0.03) inset, 0 8px 24px rgb(0 0 0 / 0.35);
+}
+
+@layer base {
+  :root {
+    color-scheme: dark;
+    transition: background-color 180ms ease, color 180ms ease;
+  }
+
+  :root[data-theme="light"] {
+    color-scheme: light;
+    --color-bg-0: #f4f5fa;
+    --color-bg-1: #ffffff;
+    --color-bg-2: #f0f2f8;
+    --color-bg-3: #e7eaf2;
+    --color-surface: #ffffff;
+    --color-surface-hover: #eef0f6;
+    --color-border: #d8dce5;
+    --color-border-strong: #c0c5d2;
+    --color-fg: #1a1d2a;
+    --color-fg-muted: #4a5063;
+    --color-fg-dim: #7a8093;
+    --color-cyan: #0d7d6e;
+    --color-rose: #c01346;
+    --color-amber: #9a6800;
+    --color-blue: #1e5bd6;
+    --color-violet: #6c3fc5;
+    --color-green: #137a3f;
+    --color-cyan-soft: rgb(13 125 110 / 0.14);
+    --color-rose-soft: rgb(192 19 70 / 0.12);
+    --color-amber-soft: rgb(154 104 0 / 0.14);
+    --color-blue-soft: rgb(30 91 214 / 0.12);
+    --color-violet-soft: rgb(108 63 197 / 0.12);
+    --shadow-panel: 0 1px 0 rgb(255 255 255 / 0.9) inset, 0 4px 16px rgb(20 25 40 / 0.06);
+  }
+}
+
+@keyframes pulse-status {
+  0%, 100% { box-shadow: 0 0 0 3px rgb(74 222 128 / 0.18); }
+  50% { box-shadow: 0 0 0 5px rgb(74 222 128 / 0.05); }
+}
+
+@keyframes pulse-rose {
+  0%, 100% { box-shadow: 0 0 0 3px rgb(244 63 94 / 0.25); }
+  50% { box-shadow: 0 0 0 6px rgb(244 63 94 / 0.05); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-in {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}

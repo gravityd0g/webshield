@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Recetas — Recetario</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg sticky-top">
+  <div class="container">
+    <a class="navbar-brand" href="/">Recet<span>ario</span></a>
+    <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#nav"><span class="navbar-toggler-icon"></span></button>
+    <div class="collapse navbar-collapse" id="nav">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item"><a class="nav-link" href="/">Inicio</a></li>
+        <li class="nav-item"><a class="nav-link active" href="/recetas.html">Recetas</a></li>
+      </ul>
+      <div id="nav-auth" class="d-flex gap-2">
+        <a href="/login.html" class="btn btn-outline-naranja btn-sm">Iniciar sesión</a>
+        <a href="/registro.html" class="btn btn-naranja btn-sm">Registrarse</a>
+      </div>
+      <div id="nav-user" class="d-none align-items-center gap-3">
+        <a href="/crear.html" class="btn btn-naranja btn-sm">+ Nueva receta</a>
+        <div class="dropdown">
+          <button class="btn btn-outline-naranja btn-sm dropdown-toggle" data-bs-toggle="dropdown">
+            <span id="nav-username"></span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="/perfil.html">Mi perfil</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-danger" href="#" onclick="cerrarSesion()">Cerrar sesión</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="container py-5">
+  <div class="row">
+    <div class="col-lg-3 mb-4">
+      <div class="filtros-box">
+        <h6>Buscar</h6>
+        <input type="search" id="buscar-inp" class="form-control form-control-sm mb-3" placeholder="Nombre de la receta...">
+
+        <h6>Categorías</h6>
+        <div id="cats-filtro"></div>
+
+        <hr style="border-color:var(--borde);">
+        <h6>Dificultad</h6>
+        <button class="filtro-btn activo" data-dif="" onclick="setDif(this)">Todas</button>
+        <button class="filtro-btn" data-dif="Fácil" onclick="setDif(this)">Fácil</button>
+        <button class="filtro-btn" data-dif="Media" onclick="setDif(this)">Media</button>
+        <button class="filtro-btn" data-dif="Difícil" onclick="setDif(this)">Difícil</button>
+
+        <hr style="border-color:var(--borde);">
+        <h6>Ordenar</h6>
+        <select id="orden-sel" class="form-select form-select-sm" onchange="cargar()">
+          <option value="recientes">Más recientes</option>
+          <option value="populares">Más favoritos</option>
+          <option value="rapidas">Más rápidas</option>
+          <option value="calificacion">Mejor calificadas</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="col-lg-9">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 style="font-family:Georgia,serif;font-weight:700;margin:0;">Todas las recetas</h4>
+        <span style="color:var(--muted);font-size:.85rem;" id="conteo"></span>
+      </div>
+      <div class="row g-4" id="recetas-grid">
+        <div class="col-12 text-center py-5"><div class="spinner-border" style="color:var(--terracota)"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer><p><strong>Recetario</strong> &copy; 2024</p></footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/app.js"></script>
+<script>
+  let catActiva = '', difActiva = '';
+  const params = new URLSearchParams(location.search);
+  if (params.get('cat')) catActiva = params.get('cat');
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    actualizarNavbar();
+    if (params.get('buscar')) document.getElementById('buscar-inp').value = params.get('buscar');
+    const cats = await api('/api/categorias');
+    document.getElementById('cats-filtro').innerHTML =
+      `<button class="filtro-btn ${!catActiva ? 'activo' : ''}" data-id="" onclick="setCat(this)">Todas</button>` +
+      cats.map(c =>
+        `<button class="filtro-btn ${catActiva==c.id ? 'activo' : ''}" data-id="${c.id}" onclick="setCat(this)">${c.icono} ${c.nombre}</button>`
+      ).join('');
+    await cargar();
+
+    let t;
+    document.getElementById('buscar-inp').addEventListener('input', () => { clearTimeout(t); t = setTimeout(cargar, 400); });
+  });
+
+  async function cargar() {
+    const buscar = document.getElementById('buscar-inp')?.value || '';
+    const orden  = document.getElementById('orden-sel')?.value || 'recientes';
+    const p = new URLSearchParams();
+    if (catActiva) p.append('categoria', catActiva);
+    if (difActiva) p.append('dificultad', difActiva);
+    if (buscar)    p.append('buscar', buscar);
+    if (orden)     p.append('orden', orden);
+
+    const recetas = await api('/api/recetas?' + p.toString());
+    const grid = document.getElementById('recetas-grid');
+    document.getElementById('conteo').textContent = Array.isArray(recetas) ? `${recetas.length} receta(s)` : '';
+    if (!Array.isArray(recetas) || !recetas.length) {
+      grid.innerHTML = '<div class="col-12 text-center py-5" style="color:var(--muted)"><p>No se encontraron recetas.</p></div>';
+      return;
+    }
+    grid.innerHTML = recetas.map(tarjetaReceta).join('');
+  }
+
+  function setCat(el) {
+    catActiva = el.dataset.id;
+    document.querySelectorAll('#cats-filtro .filtro-btn').forEach(b => b.classList.remove('activo'));
+    el.classList.add('activo');
+    cargar();
+  }
+  function setDif(el) {
+    difActiva = el.dataset.dif;
+    document.querySelectorAll('[data-dif]').forEach(b => b.classList.remove('activo'));
+    el.classList.add('activo');
+    cargar();
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,112 @@
+{
+  "common": {
+    "loading": "Loading…",
+    "retry": "Retry",
+    "viewAll": "View all",
+    "cancel": "Cancel",
+    "save": "Save"
+  },
+  "auth": {
+    "login": {
+      "title": "Sign in",
+      "subtitle": "Enter your credentials to continue",
+      "emailLabel": "Email",
+      "emailPlaceholder": "admin@webshield.io",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "••••••••",
+      "forgotPassword": "Forgot your password?",
+      "submit": "Sign in",
+      "submitting": "Verifying…",
+      "errorMissingFields": "Please fill in all fields.",
+      "registerPrompt": "Don't have an account?",
+      "registerLink": "Create new account",
+      "footer": "webshield v0.1.0 · internal use",
+      "togglePasswordShow": "Show password",
+      "togglePasswordHide": "Hide password"
+    },
+    "register": {
+      "title": "Create account",
+      "subtitle": "Fill in the form to register",
+      "nameLabel": "Full name",
+      "namePlaceholder": "Your name",
+      "emailLabel": "Email",
+      "emailPlaceholder": "you@email.com",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "Min. 8 characters",
+      "confirmLabel": "Confirm password",
+      "confirmPlaceholder": "Repeat your password",
+      "submit": "Create account",
+      "submitting": "Creating account…",
+      "errorMissingFields": "Please fill in all fields.",
+      "errorMismatch": "Passwords do not match.",
+      "errorTooShort": "Password must be at least 8 characters.",
+      "loginPrompt": "Already have an account?",
+      "loginLink": "Sign in"
+    }
+  },
+  "topbar": {
+    "brandTagline": "AI request inspection",
+    "status": "WebShield online",
+    "statusTitle": "WebShield active",
+    "themeToLight": "Switch to light mode",
+    "themeToDark": "Switch to dark mode",
+    "themeTitleLight": "Light mode",
+    "themeTitleDark": "Dark mode",
+    "languageAriaLabel": "Change language",
+    "logout": "Sign out"
+  },
+  "breadcrumb": {
+    "overview": "Overview",
+    "loading": "Loading…",
+    "liveData": "Live data"
+  },
+  "dashboard": {
+    "errorTitle": "Could not connect to the database.",
+    "errorDetail": "Make sure the database is running and the API is on port 3001."
+  },
+  "live": {
+    "title": "Live events",
+    "subtitle": "Stream of inspected requests — click to inspect",
+    "filtersAriaLabel": "Stream filters",
+    "filterAll": "All",
+    "filterAnomalous": "Anomalous",
+    "filterBlocked": "Blocked",
+    "pause": "⏸ Pause",
+    "resume": "▶ Resume",
+    "pausedOverlay": "Stream paused · new events queued",
+    "live": "live",
+    "paused": "paused",
+    "col": {
+      "time": "Time",
+      "ip": "IP",
+      "method": "Method",
+      "uri": "URI",
+      "verdict": "Verdict",
+      "score": "Score",
+      "action": "Action"
+    },
+    "verdict": {
+      "valid": "Valid",
+      "anomalous": "Anomalous"
+    },
+    "action": {
+      "blocked": "BLOCKED",
+      "allowed": "ALLOWED"
+    }
+  },
+  "drawer": {
+    "event": "Event",
+    "close": "Close",
+    "summary": "Summary",
+    "timestamp": "Timestamp",
+    "sourceIp": "Source IP",
+    "method": "Method",
+    "uri": "URI",
+    "verdict": "Verdict",
+    "action": "Action",
+    "score": "score",
+    "headers": "Headers",
+    "noHeaders": "No headers captured.",
+    "body": "Body"
+  }
+}
