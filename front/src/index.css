@@ -53,11 +53,17 @@
     --color-fg: #1a1d2a;
     --color-fg-muted: #4a5063;
     --color-fg-dim: #7a8093;
-    --color-cyan-soft: rgb(20 184 166 / 0.14);
-    --color-rose-soft: rgb(225 29 72 / 0.12);
-    --color-amber-soft: rgb(217 119 6 / 0.16);
-    --color-blue-soft: rgb(37 99 235 / 0.12);
-    --color-violet-soft: rgb(139 92 246 / 0.12);
+    --color-cyan: #0d7d6e;
+    --color-rose: #c01346;
+    --color-amber: #9a6800;
+    --color-blue: #1e5bd6;
+    --color-violet: #6c3fc5;
+    --color-green: #137a3f;
+    --color-cyan-soft: rgb(13 125 110 / 0.14);
+    --color-rose-soft: rgb(192 19 70 / 0.12);
+    --color-amber-soft: rgb(154 104 0 / 0.14);
+    --color-blue-soft: rgb(30 91 214 / 0.12);
+    --color-violet-soft: rgb(108 63 197 / 0.12);
     --shadow-panel: 0 1px 0 rgb(255 255 255 / 0.9) inset, 0 4px 16px rgb(20 25 40 / 0.06);
   }
 }

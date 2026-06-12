@@ -20,6 +20,9 @@ export function useDashboardData(pollIntervalMs = 30000) {
 
   useEffect(() => {
     reload()
+  }, [reload])
+
+  useEffect(() => {
     if (pollIntervalMs <= 0) return undefined
     const id = setInterval(reload, pollIntervalMs)
     return () => clearInterval(id)

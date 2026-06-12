@@ -10,7 +10,8 @@ const BREADCRUMB_TAG = 'ml-auto font-mono text-[10px] px-2 py-1 rounded-full tra
 export default function Dashboard({ currentUser, onLogout }) {
   const { t } = useTranslation()
   const [selectedEvent, setSelectedEvent] = useState(null)
-  const { data, loading, error, reload } = useDashboardData(3000)
+  const [paused, setPaused] = useState(false)
+  const { data, loading, error, reload } = useDashboardData(paused ? 0 : 3000)
 
   return (
     <AppShell currentUser={currentUser} onLogout={onLogout}>
@@ -37,7 +38,12 @@ export default function Dashboard({ currentUser, onLogout }) {
 
       {data && (
         <section className="flex flex-col min-w-0 w-full">
-          <LiveEvents events={data.recentEvents} onSelectEvent={setSelectedEvent} />
+          <LiveEvents
+            events={data.recentEvents}
+            onSelectEvent={setSelectedEvent}
+            paused={paused}
+            onTogglePause={() => setPaused((p) => !p)}
+          />
         </section>
       )}
 

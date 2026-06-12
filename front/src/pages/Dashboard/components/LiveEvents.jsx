@@ -34,22 +34,19 @@ const formatTs = (s) => {
   return d.toLocaleTimeString(undefined, { hour12: false })
 }
 
-export default function LiveEvents({ events, onSelectEvent }) {
+export default function LiveEvents({ events, onSelectEvent, paused, onTogglePause }) {
   const { t } = useTranslation()
-  const [paused, setPaused] = useState(false)
   const [filter, setFilter] = useState('all')
 
   const filtered = (events ?? []).filter((e) => {
     if (filter === 'all') return true
     if (filter === 'anomalous') return e.verdict === 'anomalous'
-    if (filter === 'blocked') return e.action === 'blocked'
     return true
   })
 
   const filters = [
     { id: 'all', label: t('live.filterAll') },
     { id: 'anomalous', label: t('live.filterAnomalous') },
-    { id: 'blocked', label: t('live.filterBlocked') },
   ]
 
   return (
@@ -98,7 +95,7 @@ export default function LiveEvents({ events, onSelectEvent }) {
                 ? 'bg-amber-soft text-amber border border-amber rounded-md px-2.5 py-[5px] text-[11px] cursor-pointer hover:text-amber'
                 : 'bg-bg-3 text-fg-muted border border-border rounded-md px-2.5 py-[5px] text-[11px] cursor-pointer hover:text-fg'
             }
-            onClick={() => setPaused((p) => !p)}
+            onClick={onTogglePause}
           >
             {paused ? t('live.resume') : t('live.pause')}
           </button>
