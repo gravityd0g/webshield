@@ -290,3 +290,74 @@ webshield/
 - Las branches nuevas se crean a partir de `develop`.
 - Los PRs se dirigen a `develop`; eventualmente se hace merge a `main`.
 - Las branches se nombran a partir del issue correspondiente.
+
+---
+
+## Deploy en VLAN TEC
+
+El deploy productivo del proyecto NO usa Docker Compose local; corre en 5 VMs separadas dentro de la VLAN `infra2Red` (172.16.67.0/24) del datacenter TEC. Las instrucciones de instalación de arriba son para desarrollo local; este apartado documenta el deploy real.
+
+### Topología
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  VLAN infra2Red — 172.16.67.0/24                            │
+│                                                             │
+│  frontend-DEN .148  ── nginx :443 (HTTPS) + dist React      │
+│       │  proxy /api/*                                       │
+│       ▼                                                     │
+│  backend-DEN .144   ── Node 22 + Express :3001 (HTTP)       │
+│       │  mysql2                                             │
+│       ▼                                                     │
+│  db-DEN .136        ── MySQL 8.4 :3306                      │
+│                                                             │
+│  waf-DEN .172       ── nginx :8081/:8082 + uvicorn :8080    │
+│       │  POST /inspect                  │ POST /api/ingest  │
+│       ▼                                 ▼                   │
+│  ML-VM "tec" .67    ── FastAPI :8000   backend-DEN          │
+│                                                             │
+│  app-DEN .149       ── App dummy víctima (single_app)       │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Puertos y servicios
+
+| VM | IP | Servicio | Puerto interno | Acceso |
+|---|---|---|---|---|
+| frontend-DEN | .148 | nginx | 443 (HTTPS) | nginx termina TLS aquí; sirve `dist/` y proxy a backend |
+| backend-DEN | .144 | webshield-api.service (Node) | 3001 (HTTP) | Solo desde frontend-DEN y waf-DEN |
+| db-DEN | .136 | mysql.service (8.4 LTS) | 3306 | Solo desde backend-DEN |
+| waf-DEN | .172 | webshield-waf.service (uvicorn) | 8080 (interno), 8081/8082 (nginx público) | 8082 abierto al VLAN |
+| ML | .67 | webshield-ml.service | 8000 | Solo desde waf-DEN |
+
+### Acceso externo
+
+La VLAN es privada (RFC1918, sin Floating IP en las VMs). El acceso desde fuera requiere SSH tunneling vía cloudflared + miku-bastion:
+
+```bash
+# Túnel al dashboard (HTTPS)
+ssh -N -L 8443:127.0.0.1:443 frontend-DEN
+# luego abrir https://localhost:8443 en el browser
+
+# Túnel al WAF para feed de tráfico
+ssh -N -L 8082:127.0.0.1:8082 -J tec equipo68@172.16.67.172
+```
+
+### Security Groups (OpenStack)
+
+Las reglas están en el SG attachado a cada VM. **Cambios en los SGs deben coordinarse con infra** para no romper conectividad inter-VM. Reglas clave:
+
+- backend-DEN `:3001/tcp` desde `172.16.67.0/24` (frontend + WAF)
+- db-DEN `:3306/tcp` desde `172.16.67.144/32` (solo backend)
+- WAF `:8082/tcp` desde `0.0.0.0/0` (público para tráfico real)
+
+### Tokens compartidos (`.env` en cada VM)
+
+| Token | Propósito | Sincronizar entre |
+|---|---|---|
+| `ML_API_TOKEN` | Auth WAF → ML | waf-DEN y ML VM |
+| `INGEST_API_TOKEN` | Auth WAF → backend `/api/ingest/events` | waf-DEN y backend-DEN |
+| `JWT_SECRET` | Firmar cookies de sesión del dashboard | Solo backend-DEN |
+| MySQL passwords | `root` y `webshield@172.16.67.144/32` | Solo db-DEN; backend-DEN usa el del user app |
+
+Si se rota un token compartido, debe actualizarse en ambos lados simultáneamente para no perder eventos.
