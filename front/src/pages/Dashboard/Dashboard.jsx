@@ -1,25 +1,20 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import AppShell from './components/AppShell'
-import KpiCard from './components/KpiCard'
-import TrafficTimeline from './components/TrafficTimeline'
-import AttackDonut from './components/AttackDonut'
-import TopAttackerIPs from './components/TopAttackerIPs'
-import TopEndpoints from './components/TopEndpoints'
-import ModelHealth from './components/ModelHealth'
 import LiveEvents from './components/LiveEvents'
 import EventDrawer from './components/EventDrawer'
 import { useDashboardData } from './useDashboardData'
 
 const BREADCRUMB_TAG = 'ml-auto font-mono text-[10px] px-2 py-1 rounded-full tracking-wider uppercase'
 
-export default function Dashboard({ currentUser }) {
+export default function Dashboard({ currentUser, onLogout }) {
   const { t } = useTranslation()
   const [selectedEvent, setSelectedEvent] = useState(null)
-  const { data, loading, error, reload } = useDashboardData()
+  const [paused, setPaused] = useState(false)
+  const { data, loading, error, reload } = useDashboardData(paused ? 0 : 3000)
 
   return (
-    <AppShell currentUser={currentUser}>
+    <AppShell currentUser={currentUser} onLogout={onLogout}>
       <div className="flex items-center gap-2 text-xs text-fg-muted mb-1">
         <span>{t('breadcrumb.overview')}</span>
         {loading && !data && <span className={`${BREADCRUMB_TAG} bg-amber-soft text-amber`}>{t('breadcrumb.loading')}</span>}
@@ -42,29 +37,17 @@ export default function Dashboard({ currentUser }) {
       )}
 
       {data && (
-        <>
-          <section className="grid grid-cols-12 gap-4">
-            <LiveEvents events={data.recentEvents} attackTypes={data.attackTypes} onSelectEvent={setSelectedEvent} />
-          </section>
-
-          <section className="grid grid-cols-6 max-[1400px]:grid-cols-3 gap-4" aria-label={t('breadcrumb.overview')}>
-            {data.kpis.map((k) => <KpiCard key={k.id} {...k} />)}
-          </section>
-
-          <section className="grid grid-cols-12 max-[1100px]:grid-cols-1 gap-4">
-            <div className="col-span-8 max-[1100px]:col-span-1"><TrafficTimeline data={data.timeline} /></div>
-            <div className="col-span-4 max-[1100px]:col-span-1"><AttackDonut data={data.attackTypes} /></div>
-          </section>
-
-          <section className="grid grid-cols-12 max-[1100px]:grid-cols-1 gap-4">
-            <div className="col-span-5 max-[1100px]:col-span-1"><TopAttackerIPs data={data.topIPs} /></div>
-            <div className="col-span-4 max-[1100px]:col-span-1"><TopEndpoints data={data.topEndpoints} /></div>
-            <div className="col-span-3 max-[1100px]:col-span-1"><ModelHealth data={data.modelHealth} /></div>
-          </section>
-        </>
+        <section className="flex flex-col min-w-0 w-full">
+          <LiveEvents
+            events={data.recentEvents}
+            onSelectEvent={setSelectedEvent}
+            paused={paused}
+            onTogglePause={() => setPaused((p) => !p)}
+          />
+        </section>
       )}
 
-      <EventDrawer event={selectedEvent} attackTypes={data?.attackTypes ?? []} onClose={() => setSelectedEvent(null)} />
+      <EventDrawer event={selectedEvent} onClose={() => setSelectedEvent(null)} />
     </AppShell>
   )
 }

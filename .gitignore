@@ -150,3 +150,9 @@ vite.config.ts.timestamp-*
 .venv/
 __pycache__/
 *.pyc
+
+# ML model artifacts — do NOT commit (use Git LFS or external storage)
+*.joblib
+*.pkl
+*.h5
+*.onnx

@@ -9,6 +9,11 @@ function Icon({ name }) {
       <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
     </>,
     moon: <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />,
+    logout: <>
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+      <path d="M16 17l5-5-5-5" />
+      <path d="M21 12H9" />
+    </>,
   }
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -45,7 +50,7 @@ function LanguageToggle() {
   )
 }
 
-function TopBar({ currentUser }) {
+function TopBar({ currentUser, onLogout }) {
   const { t } = useTranslation()
   const [theme, toggleTheme] = useTheme()
   return (
@@ -101,17 +106,28 @@ function TopBar({ currentUser }) {
             </div>
           </div>
         )}
+        {onLogout && (
+          <button
+            type="button"
+            onClick={onLogout}
+            className="w-[34px] h-[34px] grid place-items-center bg-bg-2 border border-border rounded-[10px] text-fg-muted cursor-pointer hover:text-rose hover:border-rose transition-colors"
+            aria-label={t('topbar.logout')}
+            title={t('topbar.logout')}
+          >
+            <Icon name="logout" />
+          </button>
+        )}
       </div>
     </header>
   )
 }
 
-export default function AppShell({ children, currentUser }) {
+export default function AppShell({ children, currentUser, onLogout }) {
   return (
     <div
       className="min-h-screen flex flex-col text-sm leading-[1.45] text-fg font-sans bg-bg-0 bg-[radial-gradient(1200px_600px_at_20%_-10%,rgb(96_165_250/0.06),transparent_60%),radial-gradient(900px_500px_at_110%_10%,rgb(167_139_250/0.05),transparent_60%),var(--color-bg-0)] [&_*]:box-border [&_*::before]:box-border [&_*::after]:box-border [&_*:focus-visible]:outline-2 [&_*:focus-visible]:outline-blue [&_*:focus-visible]:outline-offset-2 [&_*:focus-visible]:rounded"
     >
-      <TopBar currentUser={currentUser} />
+      <TopBar currentUser={currentUser} onLogout={onLogout} />
       <main className="flex-1 px-6 pt-5 pb-8 overflow-x-hidden flex flex-col gap-4" id="main">
         {children}
       </main>

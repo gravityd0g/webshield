@@ -1,57 +1,57 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-function buildLabelMap(attackTypes) {
-  return Object.fromEntries((attackTypes ?? []).map((t) => [t.id, t.label]))
-}
-
 function ScoreCell({ score }) {
-  const pct = Math.round(score * 100)
+  const safe = Number.isFinite(score) ? score : 0
+  const pct = Math.round(safe * 100)
   return (
     <div className="flex items-center gap-2 min-w-[120px]">
       <div className="flex-1 h-[5px] bg-bg-3 rounded-sm overflow-hidden">
         <div
           className={
-            score >= 0.7
+            safe >= 0.7
               ? 'h-full rounded-sm bg-rose'
-              : score >= 0.4
+              : safe >= 0.4
                 ? 'h-full rounded-sm bg-amber'
                 : 'h-full rounded-sm bg-cyan'
           }
           style={{ width: `${pct}%` }}
         />
       </div>
-      <span className="font-mono text-xs">{score.toFixed(2)}</span>
+      <span className="font-mono text-xs">{safe.toFixed(2)}</span>
     </div>
   )
 }
 
-function truncate(str, max = 56) {
-  return str.length <= max ? str : str.slice(0, max - 1) + '…'
+function truncate(str = '', max = 56) {
+  const s = String(str ?? '')
+  return s.length <= max ? s : s.slice(0, max - 1) + '…'
 }
 
-export default function LiveEvents({ events, attackTypes, onSelectEvent }) {
-  const { t } = useTranslation()
-  const [paused, setPaused] = useState(false)
-  const [filter, setFilter] = useState('all')
-  const labelMap = useMemo(() => buildLabelMap(attackTypes), [attackTypes])
+const formatTs = (s) => {
+  const d = new Date(s)
+  if (Number.isNaN(d.getTime())) return String(s ?? '—')
+  return d.toLocaleTimeString(undefined, { hour12: false })
+}
 
-  const filtered = events.filter((e) => {
+export default function LiveEvents({ events, onSelectEvent, paused, onTogglePause }) {
+  const { t } = useTranslation()
+  const [filter, setFilter] = useState('all')
+
+  const filtered = (events ?? []).filter((e) => {
     if (filter === 'all') return true
     if (filter === 'anomalous') return e.verdict === 'anomalous'
-    if (filter === 'blocked') return e.action === 'blocked'
     return true
   })
 
   const filters = [
     { id: 'all', label: t('live.filterAll') },
     { id: 'anomalous', label: t('live.filterAnomalous') },
-    { id: 'blocked', label: t('live.filterBlocked') },
   ]
 
   return (
     <section
-      className="bg-gradient-to-b from-bg-2 to-bg-1 border border-border rounded-[14px] px-[18px] pt-[18px] pb-4 shadow-panel flex flex-col gap-3.5 min-w-0 col-span-12"
+      className="bg-gradient-to-b from-bg-2 to-bg-1 border border-border rounded-[14px] px-[18px] pt-[18px] pb-4 shadow-panel flex flex-col gap-3.5 min-w-0 w-full"
       aria-labelledby="live-events-title"
     >
       <header className="flex items-start justify-between gap-4">
@@ -95,7 +95,7 @@ export default function LiveEvents({ events, attackTypes, onSelectEvent }) {
                 ? 'bg-amber-soft text-amber border border-amber rounded-md px-2.5 py-[5px] text-[11px] cursor-pointer hover:text-amber'
                 : 'bg-bg-3 text-fg-muted border border-border rounded-md px-2.5 py-[5px] text-[11px] cursor-pointer hover:text-fg'
             }
-            onClick={() => setPaused((p) => !p)}
+            onClick={onTogglePause}
           >
             {paused ? t('live.resume') : t('live.pause')}
           </button>
@@ -127,12 +127,6 @@ export default function LiveEvents({ events, attackTypes, onSelectEvent }) {
               <th scope="col" className="text-left px-2.5 py-[9px] font-semibold text-[10px] uppercase tracking-wider text-fg-dim border-b border-border bg-bg-2 sticky top-0 z-[1]">
                 {t('live.col.action')}
               </th>
-              <th scope="col" className="text-left px-2.5 py-[9px] font-semibold text-[10px] uppercase tracking-wider text-fg-dim border-b border-border bg-bg-2 sticky top-0 z-[1]">
-                {t('live.col.type')}
-              </th>
-              <th scope="col" className="text-left px-2.5 py-[9px] font-semibold text-[10px] uppercase tracking-wider text-fg-dim border-b border-border bg-bg-2 sticky top-0 z-[1] text-[11px]">
-                {t('live.col.rule')}
-              </th>
             </tr>
           </thead>
           <tbody>
@@ -154,17 +148,17 @@ export default function LiveEvents({ events, attackTypes, onSelectEvent }) {
                 }}
               >
                 <td className="font-mono text-xs text-fg-dim px-2.5 py-[9px] border-b border-border align-middle">
-                  {evt.ts}
+                  {formatTs(evt.ts)}
                 </td>
                 <td className="font-mono text-xs px-2.5 py-[9px] border-b border-border align-middle">{evt.ip}</td>
                 <td className="px-2.5 py-[9px] border-b border-border align-middle">
                   <span
                     className={
-                      evt.method.toLowerCase() === 'get'
+                      (evt.method ?? '').toLowerCase() === 'get'
                         ? 'inline-block font-mono text-[10px] font-bold px-1.5 py-0.5 rounded-sm tracking-wide bg-blue-soft text-blue'
-                        : evt.method.toLowerCase() === 'post'
+                        : (evt.method ?? '').toLowerCase() === 'post'
                           ? 'inline-block font-mono text-[10px] font-bold px-1.5 py-0.5 rounded-sm tracking-wide bg-violet-soft text-violet'
-                          : evt.method.toLowerCase() === 'put'
+                          : (evt.method ?? '').toLowerCase() === 'put'
                             ? 'inline-block font-mono text-[10px] font-bold px-1.5 py-0.5 rounded-sm tracking-wide bg-amber-soft text-amber'
                             : 'inline-block font-mono text-[10px] font-bold px-1.5 py-0.5 rounded-sm tracking-wide bg-rose-soft text-rose'
                     }
@@ -196,23 +190,11 @@ export default function LiveEvents({ events, attackTypes, onSelectEvent }) {
                     className={
                       evt.action === 'blocked'
                         ? 'inline-block text-[10px] font-semibold px-1.5 py-0.5 rounded-sm tracking-wide font-mono border border-current text-rose'
-                        : evt.action === 'allowed'
-                          ? 'inline-block text-[10px] font-semibold px-1.5 py-0.5 rounded-sm tracking-wide font-mono border border-current text-cyan'
-                          : 'inline-block text-[10px] font-semibold px-1.5 py-0.5 rounded-sm tracking-wide font-mono border border-current text-amber'
+                        : 'inline-block text-[10px] font-semibold px-1.5 py-0.5 rounded-sm tracking-wide font-mono border border-current text-cyan'
                     }
                   >
-                    {evt.action === 'blocked'
-                      ? t('live.action.blocked')
-                      : evt.action === 'allowed'
-                        ? t('live.action.allowed')
-                        : t('live.action.flagged')}
+                    {evt.action === 'blocked' ? t('live.action.blocked') : t('live.action.allowed')}
                   </span>
-                </td>
-                <td className="px-2.5 py-[9px] border-b border-border align-middle">
-                  {evt.attackType ? (labelMap[evt.attackType] ?? evt.attackType) : <span className="font-mono text-xs text-fg-dim">—</span>}
-                </td>
-                <td className="font-mono text-xs text-fg-dim px-2.5 py-[9px] border-b border-border align-middle text-[11px]">
-                  {evt.rule ?? '—'}
                 </td>
               </tr>
             ))}
