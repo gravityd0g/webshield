@@ -16,8 +16,8 @@ router.get('/health', requireAuth, async (_req, res) => {
 
 router.post('/inspect', requireAuth, async (req, res) => {
   try {
-    const { method, uri, query, body, userAgent, cookie } = req.body ?? {}
-    const result = await modelAnalyze({ method, uri, query, body, userAgent, cookie })
+    const { method, uri, query, body, headers, clientIp } = req.body ?? {}
+    const result = await modelAnalyze({ method, uri, query, body, headers, clientIp })
     res.json(result)
   } catch (err) {
     sendSafeError(res, err.status ?? 502, 'Model inspection failed', err)

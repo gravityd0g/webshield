@@ -27,16 +27,18 @@ pip install fastapi uvicorn joblib pandas scikit-learn
 
 | Variable | Descripción | Default |
 |---|---|---|
-| `MODEL_PATH` | Ruta al archivo `.joblib` del modelo | `models/webshield_rf_v1.joblib` |
-| `ANOMALY_THRESHOLD` | Umbral de clasificación (0.0–1.0) | `0.50` |
-| `INTERNAL_API_KEY` | API key requerida en header `X-Internal-API-Key` | `""` (sin auth) |
+| `MODEL_PATH` | Ruta al archivo `.joblib` del modelo | `/opt/webshield-ml/models/current_model.joblib` |
+| `ANOMALY_THRESHOLD` | Umbral de clasificación (0.0–1.0) | `0.90` |
+| `ML_API_TOKEN` | Bearer token requerido en header `Authorization`. Si está vacío no exige auth | `""` |
+| `LOG_LEVEL` | Nivel de log | `INFO` |
 
 ---
 
 ## Ejecución
 
 ```bash
-MODEL_PATH=../modelo/exports/webshield_rf_v1.joblib uvicorn main:app --host 0.0.0.0 --port 8001 --reload
+MODEL_PATH=../modelo/exports/webshield_rf_v1.joblib \
+  uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 ---
@@ -50,18 +52,19 @@ Devuelve el estado del servicio y metadatos del modelo cargado.
 ```json
 {
   "status": "ok",
-  "model_path": "models/webshield_rf_v1.joblib",
-  "model_version": "v1",
-  "trained_at": "2025-06-01T12:00:00",
-  "metrics": { "accuracy": 0.97, "f1": 0.96 },
-  "threshold": 0.5,
-  "feature_count": 42
+  "model_path": "/opt/webshield-ml/models/current_model.joblib",
+  "model_version": "1.0.0",
+  "trained_at": "2026-06-10T03:15:32.202997+00:00",
+  "sklearn_version": "1.6.1",
+  "features": 42,
+  "threshold": 0.9,
+  "last_loaded_at": 1781218554.2485561
 }
 ```
 
 ### `POST /inspect`
 
-Clasifica una petición HTTP. Requiere el header `X-Internal-API-Key` si `INTERNAL_API_KEY` está configurado.
+Clasifica una petición HTTP. Requiere `Authorization: Bearer <ML_API_TOKEN>` si está configurado.
 
 **Request body:**
 ```json
@@ -84,10 +87,9 @@ Clasifica una petición HTTP. Requiere el header `X-Internal-API-Key` si `INTERN
   "label": "anomalous",
   "prediction": 1,
   "prob_anomalous": 0.94,
-  "threshold": 0.5,
+  "threshold": 0.9,
   "action": "block",
-  "model_version": "v1",
-  "inspected_at": 1748780000.123
+  "model_version": "1.0.0"
 }
 ```
 
@@ -99,7 +101,6 @@ Clasifica una petición HTTP. Requiere el header `X-Internal-API-Key` si `INTERN
 | `threshold` | Umbral usado en esta clasificación |
 | `action` | `"allow"` o `"block"` |
 | `model_version` | Versión del modelo cargado |
-| `inspected_at` | Unix timestamp de la inspección |
 
 ---
 
@@ -120,4 +121,4 @@ El vector se alinea con `feature_names` del artefacto `.joblib` para garantizar 
 
 ## Hot-reload del modelo
 
-El servicio comprueba el `mtime` del archivo `.joblib` en cada petición. Si el archivo cambió (porque se re-entrenó el modelo), lo recarga automáticamente sin necesidad de reiniciar el servidor. La carga está protegida con un `threading.Lock` para evitar condiciones de carrera.
+El servicio comprueba el `mtime` del archivo `.joblib` en cada petición. Si el archivo cambió (porque se re-entrenó el modelo), lo recarga automáticamente sin necesidad de reiniciar el servidor. La carga está protegida con un lock para evitar condiciones de carrera.

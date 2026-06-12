@@ -64,8 +64,8 @@ bash scripts/gen-cert.sh
 |---|---|---|
 | `GET` | `/api/auth/me` | Devuelve el usuario autenticado actual |
 | `GET` | `/api/dashboard` | Eventos recientes del WAF (últimos 200) |
-| `GET` | `/api/model/health` | Proxy al endpoint `/health` de la ML API |
-| `POST` | `/api/model/inspect` | Proxy al endpoint `/analyze` de la ML API |
+| `GET` | `/api/model/health` | Proxy al `/health` de la ML API (consulta directa, fuera del flujo normal del WAF) |
+| `POST` | `/api/model/inspect` | Proxy al ML API para inspección directa desde el dashboard |
 
 ### Requieren Bearer token (WAF → API)
 
@@ -83,8 +83,8 @@ El login y el registro devuelven un **JWT** almacenado como cookie `HttpOnly` co
 
 - `httpOnly: true` — inaccesible desde JavaScript del navegador
 - `secure: true` — solo se envía por HTTPS
-- `sameSite: Strict` — protege contra CSRF
-- Duración: 7 días
+- `sameSite` — configurable con `COOKIE_SAMESITE` (default `Strict`, pero `Lax` es necesario cuando el frontend y backend se sirven en dominios distintos o cuando hay un reverse proxy en medio)
+- Duración: `JWT_EXPIRES_IN` (default 7 días)
 
 Las rutas protegidas usan el middleware `requireAuth`, que verifica la cookie y adjunta `req.user` con los datos del usuario.
 
@@ -143,20 +143,20 @@ El token se configura en la variable `INGEST_API_TOKEN`.
 | `http.host_header` | string | `"HTTP/1.0"` o `"HTTP/1.1"` (opcional) |
 | `http.request_headers` | object | Opcional |
 
-La inserción es transaccional: escribe en `request_events` y `request_http` en una sola transacción. Si `event_id` ya existe devuelve `200` con `{ duplicate: true }` en lugar de error.
+La inserción es transaccional: escribe en `request_events` y `request_http` en una sola transacción. Si `event_id` ya existe (el WAF reintentó el mismo evento) la operación es idempotente: el endpoint responde `204 No Content` igual que en el caso de éxito, sin volver a insertar.
 
 ---
 
 ## Proxy ML
 
-Las rutas `/api/model/*` reenvían peticiones al servicio `machineLearning-api` configurado en `MODEL_API_URL`. Requieren sesión activa.
+Las rutas `/api/model/*` reenvían peticiones al servicio `machineLearning-api` configurado en `MODEL_API_URL`. Requieren sesión activa. Se usan para consultar el modelo directamente desde herramientas internas; el flujo normal de eventos en producción no pasa por aquí (lo ingesta el WAF).
 
 ```
 GET  /api/model/health   →  MODEL_API_URL/health
-POST /api/model/inspect  →  MODEL_API_URL/analyze
+POST /api/model/inspect  →  MODEL_API_URL/inspect
 ```
 
-El timeout es configurable con `MODEL_API_TIMEOUT_MS`.
+El timeout es configurable con `MODEL_API_TIMEOUT_MS`. Si se usa Bearer auth con el ML, el token va en `MODEL_API_KEY`.
 
 ---
 

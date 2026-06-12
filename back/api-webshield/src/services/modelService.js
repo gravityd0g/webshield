@@ -1,5 +1,6 @@
-// Cliente para el ML API que corre en la VLAN del TEC (Track Python, branch 32).
-// El endpoint /analyze recibe metadata de una request HTTP y devuelve verdict.
+// Cliente HTTP para la ML API.
+// Lo usan las rutas /api/model/* del dashboard cuando se quiere consultar el modelo
+// directamente (en producción los eventos los ingesta el WAF, no este cliente).
 
 function modelUrl(path = '') {
   const base = process.env.MODEL_API_URL ?? ''
@@ -45,16 +46,17 @@ export async function modelHealth() {
   return callModel('/health')
 }
 
-export async function modelAnalyze({ method, uri, query, body, userAgent, cookie }) {
-  return callModel('/analyze', {
+export async function modelAnalyze({ method, uri, query, body, headers, clientIp }) {
+  const hdrs = headers && typeof headers === 'object' ? headers : {}
+  return callModel('/inspect', {
     method: 'POST',
     body: {
       method: method ?? 'GET',
       uri: uri ?? '/',
       query: query ?? '',
+      headers: hdrs,
       body: body ?? '',
-      user_agent: userAgent ?? '',
-      cookie: cookie ?? '',
+      client_ip: clientIp ?? '',
     },
   })
 }

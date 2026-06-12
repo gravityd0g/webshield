@@ -40,7 +40,7 @@ async function seedDatabase() {
     const [r] = await pool.query('INSERT INTO categorias (nombre, icono) VALUES (?,?)', [cats[i], icons[i]]);
     catIds.push(r.insertId);
   }
-  // catIds[0]=Desayunos, [1]=Comidas, [2]=Cenas, [3]=Postres, [4]=Bebidas, [5]=Ensaladas, [6]=Sopas, [7]=Snacks
+
 
   const recetasData = [
     [uid1, catIds[1], 'Tacos de Carnitas',
@@ -78,7 +78,7 @@ async function seedDatabase() {
     recetaIds.push(res.insertId);
   }
 
-  // Ingredientes receta 1 (Tacos de Carnitas)
+
   const ings = [
     [recetaIds[0], 'Carne de cerdo (pierna)', '1.5 kg'],
     [recetaIds[0], 'Naranja', '2 piezas'],
@@ -88,7 +88,8 @@ async function seedDatabase() {
     [recetaIds[0], 'Sal y pimienta', 'al gusto'],
     [recetaIds[0], 'Tortillas de maíz', '20 piezas'],
     [recetaIds[0], 'Cilantro y cebolla picados', 'al gusto'],
-    // Pastel de Chocolate
+ 
+
     [recetaIds[1], 'Harina', '2 tazas'],
     [recetaIds[1], 'Cacao en polvo', '3/4 taza'],
     [recetaIds[1], 'Azúcar', '2 tazas'],
@@ -98,7 +99,8 @@ async function seedDatabase() {
     [recetaIds[1], 'Aceite vegetal', '1/2 taza'],
     [recetaIds[1], 'Crema para batir', '1 taza'],
     [recetaIds[1], 'Chocolate oscuro', '200 g'],
-    // Hotcakes
+
+
     [recetaIds[2], 'Harina', '2 tazas'],
     [recetaIds[2], 'Polvo para hornear', '2 cucharaditas'],
     [recetaIds[2], 'Azúcar', '3 cucharadas'],
@@ -111,7 +113,7 @@ async function seedDatabase() {
     await pool.query('INSERT INTO ingredientes (receta_id, nombre, cantidad) VALUES (?,?,?)', ing);
   }
 
-  // Pasos receta 1
+
   const pasos = [
     [recetaIds[0], 1, 'Cortar la carne en trozos de 5 cm. Sazonar con sal y pimienta por todos lados.'],
     [recetaIds[0], 2, 'En olla de fondo grueso, calentar la manteca y dorar la carne por todos sus lados.'],
@@ -119,14 +121,16 @@ async function seedDatabase() {
     [recetaIds[0], 4, 'Bajar el fuego, tapar y cocinar 1.5 horas hasta que la carne se deshaga fácilmente.'],
     [recetaIds[0], 5, 'Subir el fuego y dejar evaporar el líquido hasta que la carne se dore en su propia grasa.'],
     [recetaIds[0], 6, 'Desmenuzar y servir en tortillas calientes con cilantro, cebolla, salsa y limón.'],
-    // Pastel
+    
+
     [recetaIds[1], 1, 'Precalentar el horno a 175°C. Engrasar y enharinar dos moldes de 23 cm.'],
     [recetaIds[1], 2, 'Mezclar harina, cacao, azúcar, polvo para hornear y sal en un tazón grande.'],
     [recetaIds[1], 3, 'Batir huevos, leche y aceite. Incorporar a los secos poco a poco hasta integrar.'],
     [recetaIds[1], 4, 'Dividir en los moldes y hornear 30-35 min. Enfriar antes de desmoldar.'],
     [recetaIds[1], 5, 'Para el ganache: calentar la crema y verter sobre el chocolate picado. Mezclar hasta homogéneo.'],
     [recetaIds[1], 6, 'Cubrir el pastel con el ganache. Refrigerar 1 hora antes de servir.'],
-    // Hotcakes
+ 
+
     [recetaIds[2], 1, 'Mezclar ingredientes secos (harina, polvo, azúcar, sal) en un tazón.'],
     [recetaIds[2], 2, 'En otro tazón batir huevo, leche y mantequilla derretida.'],
     [recetaIds[2], 3, 'Combinar húmedos con secos sin batir de más; deben quedar algunos grumos.'],
@@ -147,7 +151,8 @@ async function seedDatabase() {
   await pool.query('INSERT INTO comentarios (usuario_id, receta_id, contenido, calificacion) VALUES (?,?,?,?)',
     [uid3, recetaIds[2], 'Los hotcakes más esponjosos que he hecho. Truco de no batir de más = clave.', 4]);
 
-  // Favoritos
+
+    
   for (const [u, r] of [[uid2, recetaIds[0]], [uid2, recetaIds[3]], [uid3, recetaIds[1]], [uid3, recetaIds[2]], [uid1, recetaIds[1]]]) {
     await pool.query('INSERT INTO favoritos (usuario_id, receta_id) VALUES (?,?) ON DUPLICATE KEY UPDATE creado_en=creado_en', [u, r]);
   }
