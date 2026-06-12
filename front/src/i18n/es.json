@@ -66,11 +66,7 @@
   },
   "live": {
     "title": "Eventos en vivo",
-    "subtitle": "Stream de peticiones inspeccionadas — click para inspeccionar",
-    "filtersAriaLabel": "Filtros del stream",
-    "filterAll": "Todas",
-    "filterAnomalous": "Anómalas",
-    "filterBlocked": "Bloqueadas",
+    "subtitle": "Solo amenazas bloqueadas — click para inspeccionar",
     "pause": "⏸ Pausar",
     "resume": "▶ Reanudar",
     "pausedOverlay": "Stream pausado · nuevos eventos en cola",

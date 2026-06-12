@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 function ScoreCell({ score }) {
@@ -36,18 +35,9 @@ const formatTs = (s) => {
 
 export default function LiveEvents({ events, onSelectEvent, paused, onTogglePause }) {
   const { t } = useTranslation()
-  const [filter, setFilter] = useState('all')
 
-  const filtered = (events ?? []).filter((e) => {
-    if (filter === 'all') return true
-    if (filter === 'anomalous') return e.verdict === 'anomalous'
-    return true
-  })
-
-  const filters = [
-    { id: 'all', label: t('live.filterAll') },
-    { id: 'anomalous', label: t('live.filterAnomalous') },
-  ]
+  // El dashboard solo muestra amenazas: peticiones clasificadas como anómalas.
+  const filtered = (events ?? []).filter((e) => e.verdict === 'anomalous')
 
   return (
     <section
@@ -72,22 +62,6 @@ export default function LiveEvents({ events, onSelectEvent, paused, onTogglePaus
           </p>
         </div>
         <div className="flex gap-2 items-center">
-          <div className="flex bg-bg-3 border border-border rounded-[7px] p-0.5" role="group" aria-label={t('live.filtersAriaLabel')}>
-            {filters.map((f) => (
-              <button
-                key={f.id}
-                type="button"
-                className={
-                  filter === f.id
-                    ? 'border-0 px-2.5 py-1 text-[11px] font-medium rounded-[5px] cursor-pointer bg-bg-1 text-fg'
-                    : 'border-0 px-2.5 py-1 text-[11px] font-medium rounded-[5px] cursor-pointer bg-transparent text-fg-muted'
-                }
-                onClick={() => setFilter(f.id)}
-              >
-                {f.label}
-              </button>
-            ))}
-          </div>
           <button
             type="button"
             className={
