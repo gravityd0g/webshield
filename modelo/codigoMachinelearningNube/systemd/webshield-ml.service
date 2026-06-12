@@ -1,0 +1,21 @@
+[Unit]
+Description=WebShield ML Inspection API
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=webshield
+Group=webshield
+WorkingDirectory=/opt/webshield-ml
+EnvironmentFile=/etc/webshield/ml.env
+ExecStart=/opt/webshield-ml/venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 2
+Restart=always
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+ReadWritePaths=/opt/webshield-ml/models
+
+[Install]
+WantedBy=multi-user.target
