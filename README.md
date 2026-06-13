@@ -1,5 +1,7 @@
 # WebShield
 
+> **Mención especial:** Este proyecto no hubiera sido posible sin **Gabriel Muñoz Luna**, quien nos brindó acceso a la infraestructura a través de la VPN. Su apoyo fue fundamental para completar el despliegue y las pruebas del sistema.
+
 WebShield es una plataforma de seguridad web que combina un **Web Application Firewall (WAF) impulsado por Machine Learning** con un **dashboard de monitoreo en tiempo real**. Detecta y bloquea amenazas como SQLi, XSS, path traversal, Log4Shell y otros ataques OWASP, registrando cada evento en una base de datos para análisis posterior.
 
 ---
@@ -87,33 +89,43 @@ El esquema completo está en `database/webshield.sql`.
 
 ## Modelo de Machine Learning
 
-El WAF usa un clasificador **Random Forest** con 42 features extraídas de cada petición HTTP.
+El WAF usa un clasificador **Random Forest** con 60 features extraídas de cada petición HTTP.
 
 - **Modelo exportado**: `modelo/exports/webshield_rf_v1.joblib`
 - **Script de entrenamiento**: `modelo/training/train_classifier.py`
-- **Umbral de clasificación**: configurable con `ANOMALY_THRESHOLD` (default `0.90`)
+- **Umbral de clasificación**: configurable con `ANOMALY_THRESHOLD` (default `0.64`)
 - **Salida**: probabilidad de anomalía + label (`valid`/`anomalous`) + acción (`allow`/`block`)
 
-Categorías de ataque detectadas (alineadas con OWASP CRS):
+### Métricas del modelo
 
-| Categoría | Referencia CRS |
+| Métrica | Valor |
 |---|---|
-| SQL Injection (básico y avanzado) | CRS 942 |
-| Cross-Site Scripting (básico y avanzado) | CRS 941 |
-| Remote Code Execution | CRS 932 |
-| Local File Inclusion | CRS 930 |
-| Remote File Inclusion | CRS 931 |
-| PHP attacks | CRS 933 |
-| XXE (XML External Entity) | — |
-| Log4Shell / JNDI injection | CRS 944 |
-| NoSQL injection | — |
-| Deserialization attacks | — |
-| Sensitive file probing | — |
-| Admin path probing | — |
-| Double URL encoding (evasión) | — |
-| Null byte injection | — |
-| Scanner / bot fingerprinting | CRS 913 |
-| Path traversal | CRS 930 |
+| Algoritmo | Random Forest Classifier |
+| Versión | 1.0.0 |
+| Features | 60 características HTTP |
+| Accuracy | 90.75% |
+| ROC-AUC | 0.9584 |
+| PR-AUC | 0.9745 |
+| Threshold | 0.64 |
+
+### Categorías de ataque detectadas (alineadas con OWASP CRS)
+
+| CRS | Categoría | Ejemplos |
+|---|---|---|
+| CRS 941 | Cross-Site Scripting (básico y avanzado) | `<script>`, `onerror=`, `alert()` |
+| CRS 942 | SQL Injection (básico y avanzado) | `union select`, `or 1=1`, `drop table` |
+| CRS 930 | Local File Inclusion / Path traversal | `/etc/passwd`, `php://filter`, `../` |
+| CRS 931 | Remote File Inclusion | `=http://`, `include=https://` |
+| CRS 932 | Remote Code Execution | `exec()`, `system()`, `/bin/sh` |
+| CRS 933 | PHP Attacks | `<?php`, `base64_decode` |
+| CRS 934 | NoSQL Injection | `$where`, `$gt`, `$regex` |
+| CRS 944 | Log4Shell / JNDI injection | `${jndi:}`, `ldap://` |
+| CRS 920 | Protocol Attacks | Null bytes `%00`, double URL encoding |
+| CRS 913 | Scanner / bot fingerprinting | `sqlmap`, `nikto`, `nmap`, `masscan` |
+| — | XXE (XML External Entity) | — |
+| — | Deserialization attacks | — |
+| — | Sensitive file probing | `.env`, `.git`, `wp-config.php` |
+| — | Admin path probing | `/wp-admin`, `/phpmyadmin` |
 
 ---
 
@@ -288,21 +300,58 @@ El deploy productivo del proyecto NO usa Docker Compose local; corre en 5 VMs se
 │  waf-DEN .172       ── nginx :8081/:8082 + uvicorn :8080    │
 │       │  POST /inspect                  │ POST /api/ingest  │
 │       ▼                                 ▼                   │
-│  ML-VM "tec" .67    ── FastAPI :8000   backend-DEN          │
+│  infra2 (físico) .67 ── FastAPI :8000  backend-DEN          │
 │                                                             │
 │  app-DEN .149       ── App dummy víctima (single_app)       │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-### Puertos y servicios
+### Instancias y puertos
 
-| VM | IP | Servicio | Puerto interno | Acceso |
+| Instancia | IP | Puerto | Público | Rol |
 |---|---|---|---|---|
-| frontend-DEN | .148 | nginx | 443 (HTTPS) | nginx termina TLS aquí; sirve `dist/` y proxy a backend |
-| backend-DEN | .144 | webshield-api.service (Node) | 3001 (HTTP) | Solo desde frontend-DEN y waf-DEN |
-| db-DEN | .136 | mysql.service (8.4 LTS) | 3306 | Solo desde backend-DEN |
-| waf-DEN | .172 | webshield-waf.service (uvicorn) | 8080 (interno), 8081/8082 (nginx público) | 8082 abierto al VLAN |
-| ML | .67 | webshield-ml.service | 8000 | Solo desde waf-DEN |
+| waf-DEN | 172.16.67.172 | 8081, 8082 | ✅ | WAF + punto de entrada único |
+| app-DEN | 172.16.67.149 | 8000 | ❌ | App objetivo + API atacable |
+| frontend-DEN | 172.16.67.148 | 443 (HTTPS) | ❌ | UI Dashboard (nginx + React dist) |
+| backend-DEN | 172.16.67.144 | 3001 | ❌ | API Dashboard (Node/Express) |
+| db-DEN | 172.16.67.136 | 3306 | ❌ | MySQL 8.4 (Docker) |
+| infra2 (físico) | 172.16.67.67 | 8000 | ❌ local | ML API — servidor físico en red local |
+
+> **Nota:** `infra2` no es una instancia OpenStack, sino un servidor físico. Su acceso está controlado por UFW directamente y solo es accesible desde la red interna `172.16.67.0/24`.
+
+### Flujo de tráfico
+
+**Puerto 8081 — Dashboard:**
+```
+Internet → waf-DEN:8081 → frontend-DEN:443
+                               │
+                               ▼
+                          backend-DEN:3001
+                               │
+                               ▼
+                           db-DEN:3306
+```
+
+**Puerto 8082 — App objetivo:**
+```
+Internet → waf-DEN:8082
+               │
+               ├── inspect → infra2:8000/inspect
+               │         ← prob_anomalous
+               │
+               ├── ≥ 0.64 → BLOCK 403
+               │
+               └── < 0.64 → PASS → app-DEN:8000
+```
+
+### Separación de entornos
+
+Aunque no se cuenta con dominio DNS, el WAF separa el tráfico por puerto:
+
+| Puerto | Destino | Descripción |
+|---|---|---|
+| 8081 | frontend-DEN | Dashboard de monitoreo — solo lectura |
+| 8082 | app-DEN | Aplicación expuesta a ataques |
 
 ### Acceso externo
 
@@ -319,22 +368,95 @@ ssh -N -L 8082:127.0.0.1:8082 -J tec equipo68@172.16.67.172
 
 ### Security Groups (OpenStack)
 
-Las reglas están en el SG attachado a cada VM. **Cambios en los SGs deben coordinarse con infra** para no romper conectividad inter-VM. Reglas clave:
+Las reglas están en el SG attachado a cada VM. **Cambios en los SGs deben coordinarse con infra** para no romper conectividad inter-VM.
 
-- backend-DEN `:3001/tcp` desde `172.16.67.0/24` (frontend + WAF)
-- db-DEN `:3306/tcp` desde `172.16.67.144/32` (solo backend)
-- WAF `:8082/tcp` desde `0.0.0.0/0` (público para tráfico real)
+**waf-DEN (172.16.67.172) — público:**
+
+| Dirección | Protocolo | Puerto | Origen |
+|---|---|---|---|
+| Saliente | IPv4 any | any | 0.0.0.0/0 |
+| Saliente | IPv6 any | any | ::/0 |
+| Entrante | ICMP | any | 0.0.0.0/0 |
+| Entrante | TCP | 22 (SSH) | 172.16.67.144/32 |
+| Entrante | TCP | 80 | 0.0.0.0/0 |
+| Entrante | TCP | 443 | 0.0.0.0/0 |
+| Entrante | TCP | 3001 | 172.16.67.67/32 |
+
+**app-DEN (172.16.67.149) — interno:**
+
+| Dirección | Protocolo | Puerto | Origen |
+|---|---|---|---|
+| Saliente | IPv4 any | any | 0.0.0.0/0 |
+| Saliente | IPv6 any | any | ::/0 |
+| Entrante | ICMP | any | 172.16.67.0/24 |
+| Entrante | TCP | 22 (SSH) | 172.16.67.0/24 |
+| Entrante | TCP | 80 | 172.16.67.0/24 |
+| Entrante | TCP | 443 | 172.16.67.0/24 |
+| Entrante | TCP | 8000 | 172.16.67.0/24 |
+
+**backend-DEN (172.16.67.144) — interno:**
+
+| Dirección | Protocolo | Puerto | Origen |
+|---|---|---|---|
+| Saliente | IPv4 TCP | any | 172.16.67.144/32 |
+| Saliente | IPv6 any | any | ::/0 |
+| Entrante | ICMP | any | 172.16.67.0/24 |
+| Entrante | TCP | 22 (SSH) | 172.16.67.67/32 |
+| Entrante | TCP | 3001 | 172.16.67.144/32 |
+| Entrante | TCP | 3001 | 172.16.67.172/32 |
+| Entrante | TCP | 3306 (MySQL) | 172.16.67.148/32 |
+| Entrante | TCP | 3306 (MySQL) | 172.16.67.136/32 |
+
+**db-DEN (172.16.67.136) — más restringido:**
+
+| Dirección | Protocolo | Puerto | Origen |
+|---|---|---|---|
+| Saliente | IPv4 TCP | any | 172.16.67.144/32 |
+| Saliente | IPv6 any | any | ::/0 |
+| Entrante | ICMP | any | 172.16.67.0/24 |
+| Entrante | TCP | 22 (SSH) | 172.16.67.144/32 |
+| Entrante | TCP | 3306 (MySQL) | 172.16.67.144/32 |
+
+**frontend-DEN (172.16.67.148) — interno:**
+
+| Dirección | Protocolo | Puerto | Origen |
+|---|---|---|---|
+| Saliente | IPv4 TCP | any | 172.16.67.144/32 |
+| Saliente | IPv6 any | any | ::/0 |
+| Entrante | ICMP | any | 172.16.67.0/24 |
+| Entrante | TCP | any | 172.16.67.172/32 |
+| Entrante | TCP | any | 172.16.67.144/32 |
+| Entrante | TCP | 22 (SSH) | 172.16.67.144/32 |
+| Entrante | TCP | 80 | 172.16.67.172/32 |
+| Entrante | TCP | 80 | 172.16.67.144/32 |
+| Entrante | TCP | 443 | 172.16.67.144/24 |
+| Entrante | TCP | 3001 | 172.16.67.144/32 |
+| Entrante | TCP | 3306 (MySQL) | 172.16.67.144/32 |
 
 ### Tokens compartidos (`.env` en cada VM)
 
 | Token | Propósito | Sincronizar entre |
 |---|---|---|
-| `ML_API_TOKEN` | Auth WAF → ML | waf-DEN y ML VM |
+| `ML_API_TOKEN` | Auth WAF → ML | waf-DEN y infra2 |
 | `INGEST_API_TOKEN` | Auth WAF → backend `/api/ingest/events` | waf-DEN y backend-DEN |
 | `JWT_SECRET` | Firmar cookies de sesión del dashboard | Solo backend-DEN |
 | MySQL passwords | `root` y `webshield@172.16.67.144/32` | Solo db-DEN; backend-DEN usa el del user app |
 
 Si se rota un token compartido, debe actualizarse en ambos lados simultáneamente para no perder eventos.
+
+### Razonamiento de seguridad
+
+**Una sola IP pública** — solo waf-DEN es visible desde internet. Todos los demás son inaccesibles externamente.
+
+**App objetivo contenida** — todo lo atacable está en app-DEN. Simplifica el entorno de pruebas y limita el blast radius.
+
+**Dashboard en tres instancias separadas** — frontend, backend y DB aislados. Si una capa es comprometida, las otras permanecen protegidas.
+
+**ML API en servidor físico local** — el modelo no está en la nube. Acceso controlado por UFW, solo accesible desde la red interna `172.16.67.0/24`.
+
+**MySQL en Docker** — aislamiento del servicio de base de datos dentro de db-DEN.
+
+**SSH restringido por IP** — cada instancia solo acepta SSH desde IPs específicas con `/32`, no desde toda la red.
 
 ---
 
