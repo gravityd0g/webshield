@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Registro — Recetario</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body style="background:var(--fondo);min-height:100vh;">
+
+<nav class="navbar" style="border-bottom:2px solid var(--cafe);">
+  <div class="container">
+    <a class="navbar-brand" href="/">Recet<span>ario</span></a>
+  </div>
+</nav>
+
+<div class="auth-card" style="max-width:460px;">
+  <h2>Crear cuenta</h2>
+  <p style="color:var(--muted);margin-bottom:1.5rem;font-family:'Segoe UI',sans-serif;font-size:.9rem;">Únete y comparte tus recetas</p>
+
+  <div id="error-msg" class="alert alert-danger d-none" style="font-size:.88rem;"></div>
+
+  <form id="reg-form">
+    <div class="mb-3">
+      <label class="form-label" style="font-weight:600;font-family:'Segoe UI',sans-serif;font-size:.88rem;">Nombre completo</label>
+      <input type="text" id="nombre" class="form-control" placeholder="Juan Pérez" required>
+    </div>
+    <div class="mb-3">
+      <label class="form-label" style="font-weight:600;font-family:'Segoe UI',sans-serif;font-size:.88rem;">Usuario</label>
+      <input type="text" id="username" class="form-control" placeholder="juan123" required>
+    </div>
+    <div class="mb-3">
+      <label class="form-label" style="font-weight:600;font-family:'Segoe UI',sans-serif;font-size:.88rem;">Email</label>
+      <input type="email" id="email" class="form-control" placeholder="juan@email.com" required>
+    </div>
+    <div class="mb-4">
+      <label class="form-label" style="font-weight:600;font-family:'Segoe UI',sans-serif;font-size:.88rem;">Contraseña</label>
+      <input type="password" id="password" class="form-control" placeholder="Mínimo 6 caracteres" required minlength="6">
+    </div>
+    <button type="submit" id="btn" class="btn btn-naranja w-100" style="padding:10px;">Crear cuenta</button>
+  </form>
+
+  <hr style="border-color:var(--borde);margin:1.5rem 0;">
+  <p style="text-align:center;font-family:'Segoe UI',sans-serif;font-size:.88rem;color:var(--muted);">
+    ¿Ya tienes cuenta? <a href="/login.html" style="color:var(--terracota);font-weight:600;">Inicia sesión</a>
+  </p>
+</div>
+
+<script src="/js/app.js"></script>
+<script>
+  if (estaLogueado()) location.href = '/perfil.html';
+
+  document.getElementById('reg-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const btn = document.getElementById('btn');
+    btn.disabled = true; btn.textContent = 'Creando cuenta...';
+
+    const res = await api('/api/auth/registro', 'POST', {
+      nombre:   document.getElementById('nombre').value,
+      username: document.getElementById('username').value,
+      email:    document.getElementById('email').value,
+      password: document.getElementById('password').value
+    });
+
+    if (res.token) {
+      localStorage.setItem('token', res.token);
+      localStorage.setItem('username', res.username);
+      localStorage.setItem('nombre', res.nombre || res.username);
+      location.href = '/';
+    } else {
+      document.getElementById('error-msg').textContent = res.error;
+      document.getElementById('error-msg').classList.remove('d-none');
+      btn.disabled = false; btn.textContent = 'Crear cuenta';
+    }
+  });
+</script>
+</body>
+</html>
