@@ -64,7 +64,7 @@ webshield/
 │   └── client/                cliente de inferencia local
 ├── recetas-app/               app demo opcional para que el WAF tenga algo que proteger
 ├── scripts/                   utilidades (setup-db, gen-cert)
-├── Documentación/             notas de arquitectura del equipo
+├── Documentación/             infra física (router + ML), notas de arquitectura
 ├── docker-compose.yml         MySQL local para desarrollo
 └── README.md
 ```
@@ -462,6 +462,7 @@ Si se rota un token compartido, debe actualizarse en ambos lados simultáneament
 
 ## Documentación por componente
 
+- [`Documentación/infra-fisica.md`](Documentación/infrafisica.md) — infra física: router Cisco, servidor ML (nginx, UFW, fail2ban, red interna)
 - [`back/api-webshield/README.md`](back/api-webshield/README.md) — endpoints, auth, validación de ingest, env vars
 - [`front/README.md`](front/README.md) — stack, scripts de Vite, i18n, theming
 - [`waf_proxy/README.md`](waf_proxy/README.md) — routing por app, headers de proxy, ingest, despliegue port-based

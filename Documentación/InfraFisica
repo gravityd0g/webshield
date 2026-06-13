@@ -1,0 +1,282 @@
+# infra2 — System Configuration
+
+Documentación del servidor físico **infra2** y del router/gateway de la red interna del proyecto WebShield.
+
+> **Nota:** Este entorno es distinto del despliegue OpenStack documentado en el [README principal](../README.md) (sección *Deploy en VLAN TEC*). Aquí las IPs de WAF y backend demo son **172.16.67.152** y **172.16.67.137**; en el README del repo aparecen otras IPs para las VMs `-DEN`.
+
+---
+
+## Router / Gateway (Cisco)
+
+| Campo | Valor |
+|---|---|
+| Hostname | `Infra2` |
+| Interfaz WAN (outside) | `GigabitEthernet0/0/0` — DHCP + NAT outside |
+| Interfaz LAN (inside) | `GigabitEthernet0/0/1` — `172.16.67.254/24` + NAT inside |
+| Gateway VLAN interna | `172.16.67.254` |
+
+### Configuración IOS
+
+```ios
+hostname Infra2
+
+enable secret clavehub123
+
+interface gigabitethernet 0/0/0
+ ip address dhcp
+ ip nat outside
+ no shutdown
+exit
+
+interface gigabitethernet 0/0/1
+ ip address 172.16.67.254 255.255.255.0
+ ip nat inside
+! encapsulation dot1q 67
+! ip access-group 100 in
+ no shutdown
+exit
+
+access-list 101 permit ip 172.16.67.0 0.0.0.255 any
+
+access-list 100 permit tcp 172.16.67.0 0.0.0.255 any eq 22
+access-list 100 permit tcp 172.16.67.0 0.0.0.255 any eq 443
+access-list 100 deny ip any any
+
+ip nat inside source list 101 interface gigabitethernet 0/0/0 overload
+
+ip route 192.168.200.0 255.255.255.0 172.16.67.10
+ip route 192.168.133.0 255.255.255.0 172.16.67.10
+```
+
+### Resumen
+
+- **NAT:** tráfico de `172.16.67.0/24` sale a internet por `Gi0/0/0` (overload/PAT).
+- **ACL 100 (comentada en LAN):** si se activa en `Gi0/0/1`, solo permite SSH (22) y HTTPS (443) desde la VLAN hacia afuera; el resto se deniega.
+- **Rutas estáticas:** redes `192.168.200.0/24` y `192.168.133.0/24` vía next-hop `172.16.67.10` (acceso a máquinas de prueba/ataque, p. ej. Parrot).
+
+---
+
+## Servidor infra2 (ML API + Nginx)
+
+### Instance
+
+| Field | Value |
+|---|---|
+| Hostname | infra2 |
+| IP | 172.16.67.67 |
+| OS | Ubuntu 26.04 LTS |
+| Kernel | Linux 7.0.0-14-generic x86_64 |
+| RAM | 14 GB |
+| Disk | 232.64 GB |
+| Swap | 4 GB |
+
+---
+
+## Users
+
+| User | Role |
+|---|---|
+| infra2 | sudo/admin |
+| equipociber | application user |
+
+---
+
+## Nginx
+
+| Campo | Valor |
+|---|---|
+| Version | nginx/1.28.3 |
+| Status | active, enabled on boot |
+| Config | `/etc/nginx/sites-available/webshield` |
+
+```nginx
+limit_req_zone $binary_remote_addr zone=api:10m rate=10r/m;
+
+server {
+    listen 80;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name 172.16.67.67;
+
+    ssl_certificate     /etc/ssl/certs/webshield.crt;
+    ssl_certificate_key /etc/ssl/private/webshield.key;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 1d;
+
+    add_header X-Content-Type-Options nosniff;
+    add_header X-Frame-Options DENY;
+    add_header Strict-Transport-Security "max-age=31536000" always;
+    add_header X-XSS-Protection "1; mode=block";
+
+    limit_req zone=api burst=5 nodelay;
+
+    location / {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        client_max_body_size 10k;
+    }
+}
+```
+
+> **Importante:** el WAF en producción llama a la ML API por **`http://172.16.67.67:8000/inspect`** (puerto directo, red interna). Nginx en `:443` expone la misma API con TLS, rate limit (`10r/m`) y body máximo **10 KB**.
+
+---
+
+## SSL Certificate
+
+| Field | Value |
+|---|---|
+| Type | Self-signed RSA 2048 |
+| Validity | 365 days |
+| CN | 172.16.67.67 |
+| Protocols | TLSv1.2 / TLSv1.3 |
+| Certificate | `/etc/ssl/certs/webshield.crt` |
+| Private Key | `/etc/ssl/private/webshield.key` (chmod 600) |
+
+---
+
+## Firewall (UFW)
+
+| Rule | Protocol | Port | Action | From |
+|---|---|---|---|---|
+| SSH | TCP | 22 | ALLOW | Anywhere |
+| HTTPS | TCP | 443 | ALLOW | Anywhere |
+| HTTP | TCP | 80 | DENY | Anywhere |
+| ML API | TCP | 8000 | ALLOW | 172.16.67.0/24 |
+| ML API | TCP | 8000 | DENY | Anywhere |
+| ICMP | — | — | ALLOW | Anywhere |
+
+---
+
+## Fail2ban
+
+| Campo | Valor |
+|---|---|
+| Status | active |
+| Config | `/etc/fail2ban/jail.local` |
+| Filter | `/etc/fail2ban/filter.d/nginx-limit-req.conf` (default) |
+
+```ini
+[nginx-limit-req]
+enabled  = true
+filter   = nginx-limit-req
+logpath  = /var/log/nginx/error.log
+maxretry = 10
+findtime = 60
+bantime  = 3600
+```
+
+---
+
+## SSH
+
+| Field | Value |
+|---|---|
+| Port | 22 |
+| Key | `~/.ssh/loquesea` (chmod 600) |
+| Config | `~/.ssh/config` (chmod 600) |
+| Directory | `~/.ssh/` (chmod 700) |
+
+---
+
+## ML API (equipociber)
+
+| Field | Value |
+|---|---|
+| Python | 3.11.15 |
+| Venv | `~/.venv311` |
+| Port | 8000 |
+| Host | 0.0.0.0 (acceso desde red interna) |
+| Model | `~/webshield_rf_v1.joblib` (chmod 600) |
+| Entry point | `~/main.py` |
+| Feature extractor | `~/features.py` |
+
+### Environment Variables
+
+| Variable | Value |
+|---|---|
+| `MODEL_PATH` | `webshield_rf_v1.joblib` |
+| `ANOMALY_THRESHOLD` | `0.60` |
+| `INTERNAL_API_KEY` | set at runtime |
+
+> En el código del repo la variable de auth se llama **`ML_API_TOKEN`** (no `INTERNAL_API_KEY`). Al desplegar desde `modelo/codigoMachinelearningNube/`, usar `/etc/webshield/ml.env` con los nombres del [ml.env.example](../modelo/codigoMachinelearningNube/env/ml.env.example).
+
+### Model
+
+| Field | Value |
+|---|---|
+| Type | Random Forest Classifier |
+| Version | 1.0.0 |
+| Trained | 2026-06-08 |
+| sklearn version | 1.6.1 |
+| Features | 60 HTTP request features |
+| Accuracy | 90.75% |
+| ROC-AUC | 0.9584 |
+| PR-AUC | 0.9745 |
+
+### Endpoints
+
+| Endpoint | Method | Description |
+|---|---|---|
+| `/health` | GET | Model status and metrics |
+| `/inspect` | POST | Analyze HTTP request |
+
+---
+
+## Network
+
+| Host | IP | Role |
+|---|---|---|
+| infra2 (router LAN) | 172.16.67.254 | Gateway / NAT |
+| infra2 (servidor) | 172.16.67.67 | ML API + Nginx |
+| wafDEN | 172.16.67.152 | WAF proxy |
+| backendDEN | 172.16.67.137 | Demo backend |
+| equipo68 (VM) | 172.16.67.170 | Gateway / test client |
+| Parrot | 192.168.200.175 | Test attacker |
+
+Rutas estáticas en el router hacia `192.168.200.0/24` y `192.168.133.0/24` vía `172.16.67.10`.
+
+---
+
+## Logs
+
+| Log | Path |
+|---|---|
+| Nginx access | `/var/log/nginx/access.log` |
+| Nginx error | `/var/log/nginx/error.log` |
+| Fail2ban | `/var/log/fail2ban.log` |
+| IPS | `/home/equipociber/ips.log` |
+
+---
+
+## Flujo de tráfico (resumen)
+
+```
+Cliente / atacante
+       │
+       ▼
+  wafDEN :152  ──POST /inspect──▶  infra2 :8000  (ML API)
+       │                              │
+       │                              └── nginx :443 (opcional, TLS + rate limit)
+       │
+       ├── block → HTTP 403
+       └── allow → backendDEN :137
+```
+
+---
+
+## Referencias en el repo
+
+| Tema | Ubicación |
+|---|---|
+| Código ML (alternativa a `~/main.py`) | `modelo/codigoMachinelearningNube/app/` |
+| systemd + env de producción | `modelo/codigoMachinelearningNube/systemd/`, `env/ml.env.example` |
+| Deploy OpenStack (otras IPs) | [README.md — Deploy en VLAN TEC](../README.md#deploy-en-vlan-tec) |
+| WAF → ML URL por defecto | `waf/app/main.py`, `waf_proxy/README.md` |
