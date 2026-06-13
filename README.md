@@ -102,7 +102,7 @@ El WAF usa un clasificador **Random Forest** con 60 features extraídas de cada 
 |---|---|
 | Algoritmo | Random Forest Classifier |
 | Versión | 1.0.0 |
-| Features | 60 características HTTP |
+| Features | 42 características HTTP |
 | Accuracy | 90.75% |
 | ROC-AUC | 0.9584 |
 | PR-AUC | 0.9745 |
