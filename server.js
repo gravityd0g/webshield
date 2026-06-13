@@ -1,3 +1,7 @@
+// Sitio víctima — Recetario
+// Proyecto: WebShield — Sistema de seguridad con WAF + ML
+// Autores: Diego Ortega A01028535
+
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
