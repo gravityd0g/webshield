@@ -1,9 +1,0 @@
-Copy your trained model here before installing, or copy it later to:
-/opt/webshield-ml/models/webshield_rf_v1.joblib
-
-Then create:
-/opt/webshield-ml/models/current_model.joblib -> /opt/webshield-ml/models/webshield_rf_v1.joblib
-
-The joblib artifact must contain at least:
-- model
-- feature_names
